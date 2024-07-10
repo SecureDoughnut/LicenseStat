@@ -9,23 +9,32 @@ LicenseStat - веб-приложение, созданное для просм�
 Скриншоты:
 <details>
   <summary>Общая информация</summary>
-  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_1.png)
+  <p align="center">
+ <img src="https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_1.png" alt="qr"/>
+</p>
 </details>
 <details>
   <summary>Сделки</summary>
-  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_2.png)
-</details>
+  <p align="center">
+ <img src="https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_2.png" alt="qr"/>
+</p></details>
 <details>
   <summary>Лицензии</summary>
-  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_6.png)
+  <p align="center">
+ <img src="https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_6.png" alt="qr"/>
+</p>
 </details>
 <details>
   <summary>Клиенты</summary>
-  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_7.png)
+  <p align="center">
+ <img src="https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_7.png" alt="qr"/>
+</p>
 </details>
 <details>
   <summary>Карта</summary>
-  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_8.png)
+  <p align="center">
+ <img src="https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_8.png" alt="qr"/>
+</p>
 </details>
 
 
