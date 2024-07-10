@@ -1,0 +1,824 @@
+﻿@page
+@using LicenseStat24.NewModels
+@using LicenseStat24.PageCalcs
+@using static LicenseStat24.PageCalcs.LicenseCalc
+@model LicenseStat24.Pages.LicensesModel
+@{
+    ViewData["Title"] = "Активность за период";
+
+    // Страница показывает активные лицензии сейчас и активные лицензии за выбранный интервал
+    // Лицензии различаются на Продажи, Продления, Замены и Расширения
+    // Класс отвечающий за рачеты - LicenseCalc
+
+
+    // Информация за все время
+    LicenseCalc licenseCalc = new LicenseCalc(Model.allLicesies, Model.pageMod.startDate, Model.pageMod.endDate);
+
+    // Информация по интервалам
+    string multDates = null;
+    List<LicenseCalc> multLic = null;
+
+    if (Model.pageMod.modDate != 0) // Если интервал разбит на подинтервалы
+    {
+       
+        multDates = Newtonsoft.Json.JsonConvert.SerializeObject(Model.dateRanges.Select(s => s.StartDate.ToString("dd-MM-yy"))); // Получим список дат
+        multLic = new List<LicenseCalc>();
+        foreach (var item in Model.dateRanges) // Рассчитаем для каждой даты 
+            multLic.Add(new LicenseCalc(Model.allLicesies, item.StartDate, item.EndDate));
+    }
+
+}
+
+
+<div class="content-wrapper">
+    <section class="content">
+
+        <br>
+
+       
+
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-pills">
+                    <li class="nav-item"><a class="nav-link active" href="#forSegment" data-toggle="tab">За интервал</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#forNow" data-toggle="tab">Сейчас</a></li>
+                </ul>
+            </div>
+
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane" id="forNow">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box mb-3">
+                                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-clock"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Активные лицензии сейчас</span>
+                                        <span class="info-box-number">@licenseCalc.nowLicCount</span>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Топ продуктов</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <table id="positionsTable" class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Название</th>
+                                                    <th>Количество</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    foreach (LicProduct act in licenseCalc.nowLicListForDonut)
+                                                    {
+                                                        <tr>
+                                                            <td>@Html.Raw(act.Product)</td>
+                                                            <td>@Html.Raw(act.Count)</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">На диаграмме</h3>
+                                        <div class="card-tools">
+                                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="nowLicenses" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                        <br>
+                                        <dd class="col-sm-6">Суммарно по группам: @licenseCalc.nowLicListForDonut.Sum(s => s.Count)</dd>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <script>
+                            $(function () {
+                                var donutChartCanvas = $('#nowLicenses').get(0).getContext('2d')
+                                var donutData = {
+                                    labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.nowLicListForDonut.Select(x => x.Product).ToList())),
+                                    datasets: [
+                                        {
+                                            data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.nowLicListForDonut.Select(x => x.Count).ToList())),
+                                            backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.nowLicListForDonut.Select(x => x.RGBColor).ToList())),
+                                        }
+                                    ]
+                                }
+
+
+                                var donutOptions = {
+                                    maintainAspectRatio: false,
+                                    responsive: true,
+                                    legend: {
+                                        labels: {
+                                            fontColor: '#ffffff' // Цвет текста легенды
+                                        }
+                                    }
+                                }
+                                //Create pie or douhnut chart
+                                new Chart(donutChartCanvas, {
+                                    type: 'doughnut',
+                                    data: donutData,
+                                    options: donutOptions
+                                })
+                            })
+                        </script>
+
+                    </div>
+
+
+                    <div class="tab-pane active" id="forSegment">
+                        <ul class="nav nav-pills">
+                            <li class="nav-item"><a class="nav-link active" href="#intTab1" data-toggle="tab">Все типы</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#intTab2" data-toggle="tab">Приобретения</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#intTab3" data-toggle="tab">Замены</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#intTab4" data-toggle="tab">Расширения</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#intTab5" data-toggle="tab">Продления</a></li>
+                        </ul>
+
+                        <div class="tab-content ">
+                            <div class="tab-pane active" id="intTab1">
+
+                                @if (Model.pageMod.modDate == 0)
+                                {
+                                    <br>
+
+                                    <div class="row">
+
+                                        <div class="col-lg-6">
+
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Топ продуктов</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <table id="positionsTable" class="table table-bordered table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Название</th>
+                                                                <th>Количество</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @{
+                                                                foreach (var act in licenseCalc.activeLicListGrouped.OrderByDescending(c => c.Count).ToList())
+                                                                {
+                                                                    <tr>
+                                                                        <td>@Html.Raw(act.Product)</td>
+                                                                        <td>@Html.Raw(act.Count)</td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">На диаграмме</h3>
+                                                    <div class="card-tools">
+                                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                            <i class="fas fa-minus"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="activeLicenses" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                                    <br>
+                                                    <dd class="col-sm-6">Суммарно по группам: @licenseCalc.activeLicListGrouped.Sum(s => s.Count)</dd>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
+                                    <script>
+                                        $(function () {
+                                            var donutChartCanvas = $('#activeLicenses').get(0).getContext('2d')
+                                            var donutData = {
+                                                labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.activeLicListForDonutGrouped.Select(x => x.Product).ToList())),
+                                                datasets: [
+                                                    {
+                                                        data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.activeLicListForDonutGrouped.Select(x => x.Count).ToList())),
+                                                        backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.activeLicListForDonutGrouped.Select(x => x.RGBColor).ToList())),
+                                                    }
+                                                ]
+                                            }
+
+
+                                            var donutOptions = {
+                                                maintainAspectRatio: false,
+                                                responsive: true,
+                                                legend: {
+                                                    labels: {
+                                                        fontColor: '#ffffff' // Цвет текста легенды
+                                                    }
+                                                }
+                                            }
+                                            //Create pie or douhnut chart
+                                            new Chart(donutChartCanvas, {
+                                                type: 'doughnut',
+                                                data: donutData,
+                                                options: donutOptions
+                                            })
+                                        })
+                                    </script>
+
+                                }
+
+                                @if (Model.pageMod.modDate != 0)
+                                {
+                                    <br>
+                                    <row>
+                                        <div class="col-lg-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Количество активных лицензий за время</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="activeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                                </div>
+                                            </div>
+
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Количество непродленных лицензий за время </h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="inactiveChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </row>
+
+
+                                }
+
+                            </div>
+
+                            <div class="tab-pane" id="intTab2">
+                                <br>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">Покупки</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <table id="positionsTable" class="table table-bordered table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Название</th>
+                                                            <th>Количество</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            foreach (LicProduct act in licenseCalc.actLicTypesForDonut[0])
+                                                            {
+                                                                <tr>
+                                                                    <td>@Html.Raw(act.Product)</td>
+                                                                    <td>@Html.Raw(act.Count)</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">На диаграмме</h3>
+                                                <div class="card-tools">
+                                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="buyLicensesInt" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                                <br>
+                                                <dd class="col-sm-6">Суммарно по группам: @licenseCalc.actLicTypesForDonut[0].Sum(s => s.Count)</dd>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <script>
+                                    $(function () {
+                                        var donutChartCanvas = $('#buyLicensesInt').get(0).getContext('2d')
+                                        var donutData = {
+                                            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[0].Select(x => x.Product).ToList())),
+                                            datasets: [
+                                                {
+                                                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[0].Select(x => x.Count).ToList())),
+                                                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[0].Select(x => x.RGBColor).ToList())),
+                                                }
+                                            ]
+                                        }
+
+
+                                        var donutOptions = {
+                                            maintainAspectRatio: false,
+                                            responsive: true,
+                                            legend: {
+                                                labels: {
+                                                    fontColor: '#ffffff' // Цвет текста легенды
+                                                }
+                                            }
+                                        }
+                                        //Create pie or douhnut chart
+                                        new Chart(donutChartCanvas, {
+                                            type: 'doughnut',
+                                            data: donutData,
+                                            options: donutOptions
+                                        })
+                                    })
+                                </script>
+
+                                @if (Model.pageMod.modDate != 0)
+                                {
+                                    <br>
+                                    <row>
+                                        <div class="col-lg-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Активные приобретенные лицензии за время </h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="buyChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </row>
+
+
+                                }
+
+                            </div>
+
+                            <div class="tab-pane" id="intTab3">
+                                <br>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">Замены</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <table id="positionsTable" class="table table-bordered table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Название</th>
+                                                            <th>Количество</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            foreach (LicProduct act in licenseCalc.actLicTypesForDonut[1])
+                                                            {
+                                                                <tr>
+                                                                    <td>@Html.Raw(act.Product)</td>
+                                                                    <td>@Html.Raw(act.Count)</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">На диаграмме</h3>
+                                                <div class="card-tools">
+                                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="changeLicensesInt" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                                <br>
+                                                <dd class="col-sm-6">Суммарно по группам: @licenseCalc.actLicTypesForDonut[1].Sum(s => s.Count)</dd>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <script>
+                                    $(function () {
+                                        var donutChartCanvas = $('#changeLicensesInt').get(0).getContext('2d')
+                                        var donutData = {
+                                            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[1].Select(x => x.Product).ToList())),
+                                            datasets: [
+                                                {
+                                                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[1].Select(x => x.Count).ToList())),
+                                                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[1].Select(x => x.RGBColor).ToList())),
+                                                }
+                                            ]
+                                        }
+
+
+                                        var donutOptions = {
+                                            maintainAspectRatio: false,
+                                            responsive: true,
+                                            legend: {
+                                                labels: {
+                                                    fontColor: '#ffffff' // Цвет текста легенды
+                                                }
+                                            }
+                                        }
+                                        //Create pie or douhnut chart
+                                        new Chart(donutChartCanvas, {
+                                            type: 'doughnut',
+                                            data: donutData,
+                                            options: donutOptions
+                                        })
+                                    })
+                                </script>
+
+                                @if (Model.pageMod.modDate != 0)
+                                {
+                                    <br>
+                                    <row>
+                                        <div class="col-lg-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Активные замененные лицензии за время </h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="changeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </row>
+
+
+                                }
+
+                            </div>
+
+                            <div class="tab-pane" id="intTab4">
+                                <br>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">Активные расширения</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <table id="positionsTable" class="table table-bordered table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Название</th>
+                                                            <th>Количество</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            foreach (LicProduct act in licenseCalc.actLicTypesForDonut[2])
+                                                            {
+                                                                <tr>
+                                                                    <td>@Html.Raw(act.Product)</td>
+                                                                    <td>@Html.Raw(act.Count)</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">На диаграмме</h3>
+                                                <div class="card-tools">
+                                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="extLicensesInt" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                                <br>
+                                                <dd class="col-sm-6">Суммарно по группам: @licenseCalc.actLicTypesForDonut[2].Sum(s => s.Count)</dd>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <script>
+                                    $(function () {
+                                        var donutChartCanvas = $('#extLicensesInt').get(0).getContext('2d')
+                                        var donutData = {
+                                            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[2].Select(x => x.Product).ToList())),
+                                            datasets: [
+                                                {
+                                                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[2].Select(x => x.Count).ToList())),
+                                                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[2].Select(x => x.RGBColor).ToList())),
+                                                }
+                                            ]
+                                        }
+
+
+                                        var donutOptions = {
+                                            maintainAspectRatio: false,
+                                            responsive: true,
+                                            legend: {
+                                                labels: {
+                                                    fontColor: '#ffffff' // Цвет текста легенды
+                                                }
+                                            }
+                                        }
+                                        //Create pie or douhnut chart
+                                        new Chart(donutChartCanvas, {
+                                            type: 'doughnut',
+                                            data: donutData,
+                                            options: donutOptions
+                                        })
+                                    })
+                                </script>
+
+
+                                @if (Model.pageMod.modDate != 0)
+                                {
+                                    <br>
+                                    <row>
+                                        <div class="col-lg-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Активные лицензии-расширения за время</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="extChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </row>
+
+
+                                }
+
+                            </div>
+
+                            <div class="tab-pane" id="intTab5">
+                                <br>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">Активные продления</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <table id="positionsTable" class="table table-bordered table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Название</th>
+                                                            <th>Количество</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            foreach (LicProduct act in licenseCalc.actLicTypesForDonut[3])
+                                                            {
+                                                                <tr>
+                                                                    <td>@Html.Raw(act.Product)</td>
+                                                                    <td>@Html.Raw(act.Count)</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">На диаграмме</h3>
+                                                <div class="card-tools">
+                                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="renewLicensesInt" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                                <br>
+                                                <dd class="col-sm-6">Суммарно по группам: @licenseCalc.actLicTypesForDonut[3].Sum(s => s.Count)</dd>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <script>
+                                    $(function () {
+                                        var donutChartCanvas = $('#renewLicensesInt').get(0).getContext('2d')
+                                        var donutData = {
+                                            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[3].Select(x => x.Product).ToList())),
+                                            datasets: [
+                                                {
+                                                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[3].Select(x => x.Count).ToList())),
+                                                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(licenseCalc.actLicTypesForDonut[3].Select(x => x.RGBColor).ToList())),
+                                                }
+                                            ]
+                                        }
+
+
+                                        var donutOptions = {
+                                            maintainAspectRatio: false,
+                                            responsive: true,
+                                            legend: {
+                                                labels: {
+                                                    fontColor: '#ffffff' // Цвет текста легенды
+                                                }
+                                            }
+                                        }
+                                        //Create pie or douhnut chart
+                                        new Chart(donutChartCanvas, {
+                                            type: 'doughnut',
+                                            data: donutData,
+                                            options: donutOptions
+                                        })
+                                    })
+                                </script>
+
+                                @if (Model.pageMod.modDate != 0)
+                                {
+                                    <br>
+                                    <row>
+                                        <div class="col-lg-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Активные продленные лицензии за время </h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="renChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </row>
+                                }
+
+                            </div>
+
+                        </div>
+                    
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+
+
+    </section>
+</div>
+
+<script>
+    $(function () {
+        $('#positionsTable').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": true,
+            "ordering": false,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+    });
+
+</script>
+
+
+@if (Model.pageMod.modDate != 0)
+{
+    <script>
+        $(function () {
+            var multDates = @Html.Raw(multDates);
+            var activeLicCount = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(multLic.Select(s => s.activeLicCount)));
+            var notActiveLicCount = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(multLic.Select(s => s.notActiveLicCount)));
+            var actLicBuy = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(multLic.Select(s => s.actLicTypes[0].Count()))); // приобретения за инетервал
+            var changeChart = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(multLic.Select(s => s.actLicTypes[1].Count()))); // замены за инетервал
+            var extChart = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(multLic.Select(s => s.actLicTypes[2].Count()))); // расширения за инетервал
+            var renChart = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(multLic.Select(s => s.actLicTypes[3].Count()))); // продления за инетервал
+
+            var barChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            fontColor: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0,
+                            fontColor: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }]
+                },
+                legend: {
+                    labels: {
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    }
+                }
+            }
+
+            // Функция для создания графика
+            function createBarChart(labels, data, chartTitle, chartId, color) {
+                var ctx = document.getElementById(chartId).getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: chartTitle,
+                            data: data,
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: barChartOptions
+                });
+            }
+
+            // Создание графика для активных лицензий
+            createBarChart(multDates, activeLicCount, 'Активные', 'activeChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для неактивных лицензий
+            createBarChart(multDates, notActiveLicCount, 'Неактивные', 'inactiveChart', 'rgba(255, 99, 132, 0.5)');
+
+            // Создание графика для лицензий типа покупок
+            createBarChart(multDates, actLicBuy, 'Приобретения', 'buyChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа замен
+            createBarChart(multDates, changeChart, 'Замены', 'changeChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа расширений
+            createBarChart(multDates, extChart, 'Расширения', 'extChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа продлений
+            createBarChart(multDates, renChart, 'Продления', 'renChart', 'rgba(75, 192, 192, 0.5)');
+        });
+    </script>
+}

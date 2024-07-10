@@ -1,0 +1,810 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <style>
+        @media print {
+            .page-break {
+                page-break-before: always;
+            }
+
+            .no-page-break {
+                page-break-inside: avoid;
+            }
+            .no-print {
+                display: none;
+            }
+            @page {
+                margin: 10mm;
+            }
+        }
+    </style>
+</head>
+<body class="hold-transition">
+    <div class="wrapper">
+        <script src="https://adminlte.io/themes/v3/plugins/jquery/jquery.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/dist/js/adminlte.js"></script>
+
+        <script src="https://adminlte.io/themes/v3/plugins/jquery-mousewheel/jquery.mousewheel.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/raphael/raphael.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/jquery-mapael/jquery.mapael.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/jquery-mapael/maps/usa_states.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/chart.js/Chart.min.js"></script>
+
+
+        <script src="https://adminlte.io/themes/v3/plugins/datatables/jquery.dataTables.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/jszip/jszip.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/pdfmake/pdfmake.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/pdfmake/vfs_fonts.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+
+
+        <div class="container-fluid">
+            <br>
+            <h2>Данные за [date1] - [date2]</h2>
+            <br>
+            <section class="content">
+                <div class="row">
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>[cliNew]</h3>
+                                <p>Новые клиенты</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-person-add"></i>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>[deploy]</h3>
+                                <p>Новые внедрения</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-cube"></i>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>[totalrev] руб</></h3>
+                                <p>Выручка</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-stats-bars"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Информация по интервалам</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3 class="card-title">Новые внедрения</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="commonDeployChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="card-header">
+                            <h3 class="card-title">Новые клиенты</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="commonClientsChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card-header">
+                            <h3 class="card-title">Выручка с продаж и продлений</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="commonRevChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <br>
+                <h3>Кратко по сделкам</h3>
+                <br>
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-handshake"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Выручка с продаж</span>
+                                <span class="info-box-number">[dealsRevSales] руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-receipt"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Выручка с продлений</span>
+                                <span class="info-box-number">[dealsRevRenews] руб</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Общая выручка</span>
+                                <span class="info-box-number">[dealsRevTotal] руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Непродлений</span>
+                                <span class="info-box-number">[dealsNotRenewed]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="col-lg-12">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">Топ продуктов по выручке</h3>
+                        </div>
+                        <div class="card-body">
+                            <table id="topTable" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Имя</th>
+                                        <th>Количество, шт</th>
+                                        <th>Выручка, руб</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    [topTableRev]
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-lg-6 no-print">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Соотношение выручки</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart">
+                                    <canvas id="dealsRevDiag" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 no-print">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Соотношение количества лицензий</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart">
+                                    <canvas id="dealsSalesDiag" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <h3>Продажи</h3>
+                <br>
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-desktop"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Выручка с конфигураций</span>
+                                <span class="info-box-number">[dealsConfRev] руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-desktop"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Выручка с модулей</span>
+                                <span class="info-box-number">[dealsModRev] руб</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Общая выручка c продаж</span>
+                                <span class="info-box-number">[dealsSalesRev2] руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-handshake"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Количество продаж</span>
+                                <span class="info-box-number">[dealsSalesCount]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <br>
+                <h3>Продления</h3>
+                <br>
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Общая выручка c продлений</span>
+                                <span class="info-box-number">[renewRev] руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-receipt"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Количество продлений</span>
+                                <span class="info-box-number">[renewCount]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-break"></div>
+                <br>
+                <h3>Лицензии за весь интервал</h3>
+                <br>
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-clock"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Было активно</span>
+                                <span class="info-box-number">[activeLicListGrouped] лицензий</span>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-6">
+
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Топ продуктов</h3>
+                            </div>
+                            <div class="card-body">
+                                <table id="positionsTable" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Количество</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        [positionsTable]
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">На диаграмме</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="activeLicenses" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="page-break"></div>
+                <h3>Лицензии по интервалам</h3>
+                <row>
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Количество активных лицензий суммарное</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="activeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <row>
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Активные приобретенные лицензии за время </h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="buyChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <row>
+                    <div class="col-lg-12 ">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Активные замененные лицензии за время </h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="changeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <row>
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Активные лицензии-расширения за время</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="extChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <div class="page-break"></div>
+                <row>
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Активные продленные лицензии за время </h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="renChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <h4>Клиенты</h4>
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-user-plus"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Активные</span>
+                                <span class="info-box-number">[cliActive]</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-user-minus"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Ушедшие</span>
+                                <span class="info-box-number">[cliDead]</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-handshake"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Ср. выручка продаж</span>
+                                <span class="info-box-number">[cliAvgSellRevenue] руб</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-handshake"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Ср. выручка продлений</span>
+                                <span class="info-box-number">[cliAvgRenewRevenue] руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Топ активных по выручке</h3>
+                            </div>
+                            <div class="card-body">
+                                <table id="positionsTable" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Почта</th>
+                                            <th>Телефон</th>
+                                            <th>ФИО</th>
+                                            <th>Выручка с продаж</th>
+                                            <th>Выручка с продлений</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        [cliTable]
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </div>
+
+   
+    <script>
+        $(function () {
+            var multDates = [comMultDates];
+            var activeLicCount = [activeLicCount];
+            var notActiveLicCount = [notActiveLicCount];
+            var actLicBuy = [actLicBuy]; // приобретения за инетервал
+            var changeChart = [changeChart]; // замены за инетервал
+            var extChart = [extChart]; // расширения за инетервал
+            var renChart = [renChart]; // продления за инетервал
+
+            var barChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0
+                        }
+                    }]
+                }
+            }
+
+            // Функция для создания графика
+            function createBarChart(labels, data, chartTitle, chartId, color) {
+                var ctx = document.getElementById(chartId).getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: chartTitle,
+                            data: data,
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: barChartOptions
+                });
+            }
+
+            // Создание графика для активных лицензий
+            createBarChart(multDates, activeLicCount, 'Активные', 'activeChart', 'rgba(75, 192, 192, 0.5)');
+
+
+            // Создание графика для лицензий типа покупок
+            createBarChart(multDates, actLicBuy, 'Приобретения', 'buyChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа замен
+            createBarChart(multDates, changeChart, 'Замены', 'changeChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа расширений
+            createBarChart(multDates, extChart, 'Расширения', 'extChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа продлений
+            createBarChart(multDates, renChart, 'Продления', 'renChart', 'rgba(75, 192, 192, 0.5)');
+        });
+    </script>
+
+    <script>
+        $(function () {
+            var donutChartCanvas = $('#activeLicenses').get(0).getContext('2d')
+            var donutData = {
+                labels: [activeLicListForDonutGroupedProd],
+                datasets: [
+                    {
+                        data: [activeLicListForDonutGroupedCount],
+                        backgroundColor: [activeLicListForDonutGroupedRgb],
+                    }
+                ]
+            }
+
+
+            var donutOptions = {
+                maintainAspectRatio: false,
+                responsive: true
+            }
+            //Create pie or douhnut chart
+            new Chart(donutChartCanvas, {
+                type: 'doughnut',
+                data: donutData,
+                options: donutOptions
+            })
+        })
+    </script>
+
+
+    <script type="text/javascript">
+        $(function () {
+            // Функция для создания графика
+            function createChart(ctx, data, options, type) {
+                new Chart(ctx, {
+                    type: type,
+                    data: data,
+                    options: options
+                });
+            }
+
+            // Функция для вычисления процентного изменения
+            function calculatePercentageChange(initial, final) {
+                return ((final - initial) / initial) * 100;
+            }
+
+            // Функция для вычисления среднего значения
+            function calculateAverageValue(dataset) {
+                var sum = dataset.reduce(function (a, b) { return a + b; }, 0);
+                return sum / dataset.length;
+            }
+
+            // Функция для форматирования даты
+            function formatDate(dateString) {
+                var date = new Date(dateString);
+                return date.toLocaleDateString();
+            }
+
+            // Функция для вывода статистики
+            function displayStatistics(labels, dataset, title, containerId) {
+                var max = Math.max(...dataset);
+                var min = Math.min(...dataset);
+                var average = calculateAverageValue(dataset);
+                var growthPercentage = calculatePercentageChange(dataset[0], dataset[dataset.length - 1]);
+                var prevIntervalChange = calculatePercentageChange(dataset[dataset.length - 2], dataset[dataset.length - 1]);
+
+                var statisticsContent = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">${title}</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-6">Макс. значение:</dt>
+                            <dd class="col-sm-6">${max} (${formatDate(labels[dataset.indexOf(max)])})</dd>
+                            <dt class="col-sm-6">Мин. значение:</dt>
+                            <dd class="col-sm-6">${min} (${formatDate(labels[dataset.indexOf(min)])})</dd>
+                            <dt class="col-sm-6">Сред. значение:</dt>
+                            <dd class="col-sm-6">${average.toFixed(2)}</dd>
+                            <dt class="col-sm-6">Рост с начала отсчета:</dt>
+                            <dd class="col-sm-6">${growthPercentage.toFixed(2)}%</dd>
+                            <dt class="col-sm-6">Рост с предыдущего интервала:</dt>
+                            <dd class="col-sm-6">${prevIntervalChange.toFixed(2)}%</dd>
+                        </dl>
+                    </div>
+                </div>
+            `;
+
+                $('#' + containerId).append(statisticsContent);
+            }
+
+
+            // График "Внедрения"
+            var chartDeployData = {
+                labels: [comMultDates],
+                datasets: [{
+                    label: "Внедрения",
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: [comMultDeploys]
+                }]
+            };
+
+            var chartClientData = {
+                labels: [comMultDates],
+                datasets: [{
+                    label: "Клиенты",
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: [comMultClients]
+                }]
+            };
+
+            var chartClientCtx = document.getElementById("commonClientsChart").getContext('2d');
+            var chartDeployCtx = document.getElementById("commonDeployChart").getContext('2d');
+
+            var chartDeployOptions = {
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true,
+                            color: "rgba(255,99,164,0.2)"
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true
+                        }
+                    }]
+                }
+            };
+            createChart(chartDeployCtx, chartDeployData, chartDeployOptions, 'bar');
+            createChart(chartClientCtx, chartClientData, chartDeployOptions, 'bar');
+
+            // Вызываем функцию для анализа и вывода статистических данных для графика "Внедрения"
+            displayStatistics([comMultDates], [comMultDeploys], 'Аналитика "Внедрения"', 'statisticsDeploy');
+
+            // График "Выручка"
+            var stackedBarChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true
+                    }]
+                }
+            };
+
+            createStackedBarChart([comMultDates], [comMulltRenewRev], [comMultSalesRev], 'Выручка', 'commonRevChart');
+
+            displayStatistics([comMultDates], [comMultSalesRev], 'Аналитика "Продажи"', 'statisticsRev');
+            displayStatistics([comMultDates], [comMulltRenewRev], 'Аналитика "Продления"', 'statisticsRev');
+
+            function createStackedBarChart(labels, dataset1, dataset2, chartTitle, chartId) {
+                var ctx = document.getElementById(chartId).getContext('2d');
+                var chartData = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Продления',
+                        data: dataset1,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Продажи',
+                        data: dataset2,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                    ]
+                };
+                createChart(ctx, chartData, stackedBarChartOptions, 'bar');
+            }
+        });
+    </script>
+
+
+
+    <script>
+        $(function () {
+            var donutChartCanvas = $('#dealsSalesDiag').get(0).getContext('2d')
+            var donutData = {
+                labels: ['Продажи', 'Продления'],
+                datasets: [
+                    {
+                        data: [[dealsSalesCount], [dealsRenewCount]],
+                        backgroundColor: ['#87CEEB', '#FFA07A'],
+                    }
+                ]
+            }
+
+
+            var donutOptions = {
+                maintainAspectRatio: false,
+                responsive: true
+            }
+            new Chart(donutChartCanvas, {
+                type: 'doughnut',
+                data: donutData,
+                options: donutOptions
+            })
+        })
+    </script>
+
+    <script>
+        $(function () {
+            var donutChartCanvas = $('#dealsRevDiag').get(0).getContext('2d')
+            var donutData = {
+                labels: ['Продажи', 'Продления'],
+                datasets: [
+                    {
+                        data: [[dealsSalesRev], [dealsRenewRev]],
+                        backgroundColor: ['#87CEEB', '#FFA07A'],
+                    }
+                ]
+            }
+            var donutOptions = {
+                maintainAspectRatio: false,
+                responsive: true
+            }
+            new Chart(donutChartCanvas, {
+                type: 'doughnut',
+                data: donutData,
+                options: donutOptions
+            })
+        })
+    </script>
+
+</body>
+</html>

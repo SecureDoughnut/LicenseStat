@@ -1,0 +1,147 @@
+﻿
+
+@{
+    var selectedValue = Model.pageMod.modDate.ToString();
+}
+
+<aside class="main-sidebar sidebar-dark-primary">
+    <a href="/Index" class="brand-link">
+        <span class="brand-text font-weight-light">Панель LicenseStat</span>
+    </a>
+    <div class="sidebar">
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <li class="nav-item menu-open">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>
+                            Информация
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        
+
+                        @{
+
+                            if (User.IsInRole("ADMIN"))
+                            {
+                                // <li class="nav-item">
+                                //     <a asp-area="Identity" asp-page="/Account/Admin" class="nav-link">
+                                //         <i class="far fa-circle nav-icon"></i>
+                                //         <p>Таблица пользователей</p>
+                                //     </a>
+                                // </li>
+
+                                <li class="nav-item">
+                                    <a asp-area="Identity" asp-page="/Account/Register" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Добавить пользователя</p>
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a asp-page="/Index" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Общая информация</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-page="/Deals" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Сделки</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a asp-page="/Licenses" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Лицензии</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a asp-page="/Clients" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Клиенты</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a asp-page="/Map" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Карта</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a asp-page="/Report" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Отчет</p>
+                                    </a>
+                                </li>
+                            }
+                        }
+
+                    </ul>
+                </li>
+            </ul>
+
+
+            @if (Model.pageMod.datesVisible)
+            {
+                <form class="postDates mt-3 px-3" method="post" asp-antiforgery="true" action="/Index">
+                    <div class="form-group row">
+                        <div class="col">
+                            <input value="@string.Format("{0:yyyy-MM-dd}", Model.pageMod.startDate)" name="startDate" type="date" class="form-control" id="startDate" placeholder="Начальная дата" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col">
+                            <input value="@string.Format("{0:yyyy-MM-dd}", Model.pageMod.endDate)" name="endDate" type="date" class="form-control" id="endDate" placeholder="Конечная дата" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col">
+                            <select name="modDate" id="modDate" class="form-control">
+                                <option value="0">Без разбиения</option>
+                                <option value="1">По неделям</option>
+                                <option value="2">По месяцам</option>
+                                <option value="3">По кварталам</option>
+                                <option value="4">По полугодиям</option>
+                                <option value="5">По годам</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col">
+                            <button type="submit" class="btn btn-dark btn-block">Обновить</button>
+                        </div>
+                    </div>
+                </form>
+            }
+
+        </nav>
+    </div>
+</aside>
+<script>
+    document.getElementById("modDate").value = "@selectedValue";
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#startDate, #endDate').on('change', function () {
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+
+            if (startDate && endDate) {
+                if (startDate > endDate) {
+                    alert('Конечная дата не может быть раньше начальной даты.');
+                    $('#endDate').val(startDate);
+                }
+            }
+        });
+    });
+</script>

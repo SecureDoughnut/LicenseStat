@@ -1,0 +1,331 @@
+﻿@page
+@using LicenseStat24.NewModels;
+@using LicenseStat24.PageCalcs;
+@using System.Text;
+@using System.Globalization;
+@using static LicenseStat24.PageCalcs.DataHelper;
+
+@model CommonModel
+@{
+    ViewData["Title"] = "Общая информация";
+
+    // На странице представлены общие сведения, такие как количество внедрений и новых клиентов, общая выручка
+    // Также представлены графики по этим метрикам
+    // За расчет этой страницы отвечает класс CommonCalc
+
+    // В целом код в этом проекте сделан следующим образом
+    // - Обработчик страницы (get/post) получает данные из сессии или из базы данных (SqlNew), работает со свойствами\полями
+    // - Представление страницы (c# код) производят агрегацию\расчет над данными с использованием классов-калькуляторов
+    // - Представление страницы (js код) отрисовывает графики и диаграммы на основе подготовленных сериализованных данных
+
+
+    
+    // основная инфа
+    CommonCalc commonInfo = new CommonCalc(cliSingle.clients, Model.pageMod.startDate, Model.pageMod.endDate);
+    List<CommonCalc> mult = new List<CommonCalc>();
+
+    // для графика внедрений информация по подпериодам
+    string multDates = Newtonsoft.Json.JsonConvert.SerializeObject(cliMultiple.Select(x => x.startDate.ToString("dd-MM-yy")).ToList());
+
+    foreach (ClientEx item in cliMultiple)
+        mult.Add(new CommonCalc(item.clients, item.startDate, item.endDate));
+
+    string multDeploys = Newtonsoft.Json.JsonConvert.SerializeObject(mult.Select(c => c.deploymentsCount));
+    string multClients = Newtonsoft.Json.JsonConvert.SerializeObject(mult.Select(c => c.newClients.Count));
+    string multSalesRev = Newtonsoft.Json.JsonConvert.SerializeObject(mult.Select(c => c.salesRevenue));
+    string multRenewRev = Newtonsoft.Json.JsonConvert.SerializeObject(mult.Select(c => c.renewsRevenue));
+
+
+}
+
+
+<div class="content-wrapper">
+
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Информация за интервал</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="row">
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Html.Raw(commonInfo.newClients.Count)</h3>
+                        <p>Новые клиенты</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-person-add"></i>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Html.Raw(commonInfo.deploymentsCount)</h3>
+                        <p>Новые внедрения</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-cube"></i>
+                    </div>
+                </div>
+            </div>
+            
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Html.Raw(String.Format("{0:n0}", commonInfo.salesRevenue +  commonInfo.renewsRevenue)) руб</></h3>
+                        <p>Выручка</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-stats-bars"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+         @if (Model.pageMod.modDate != 0)
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Информация по подинтервалам</h3>
+                </div>
+                <div class="card-body">
+
+                    <div class="card-header">
+                        <h3 class="card-title">Новые внедрения</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart">
+                            <canvas id="chartDeploy" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-tool" data-toggle="collapse" data-target="#statisticsDeploy">Подробнее <i class="fas fa-plus"></i></button>
+                    </div>
+                    <div class="card-body collapse" id="statisticsDeploy">
+                        <div id="statisticsDeployContent"></div>
+                    </div>
+                    <br>
+                    <div class="card-header">
+                        <h3 class="card-title">Новые клиенты</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart">
+                            <canvas id="commonClientsChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card-header">
+                        <h3 class="card-title">Выручка с продаж и продлений</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart">
+                            <canvas id="dataRev" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-tool" data-toggle="collapse" data-target="#statisticsRev">Подробнее <i class="fas fa-plus"></i></button>
+                    </div>
+                    <div class="card-body collapse" id="statisticsRev">
+                        <div id="statisticsRevContent"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        }
+    </section>
+</div>
+
+
+
+<script type="text/javascript">
+    $(function () {
+        // Функция для создания графика
+        function createChart(ctx, data, options, type) {
+            new Chart(ctx, {
+                type: type,
+                data: data,
+                options: options
+            });
+        }
+
+        // Функция для вычисления процентного изменения
+        function calculatePercentageChange(initial, final) {
+            return ((final - initial) / initial) * 100;
+        }
+
+        // Функция для вычисления среднего значения
+        function calculateAverageValue(dataset) {
+            var sum = dataset.reduce(function (a, b) { return a + b; }, 0);
+            return sum / dataset.length;
+        }
+
+        // Функция для форматирования даты
+        function formatDate(dateString) {
+            var date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        // Функция для вывода статистики
+        function displayStatistics(labels, dataset, title, containerId) {
+            var max = Math.max(...dataset);
+            var min = Math.min(...dataset);
+            var average = calculateAverageValue(dataset);
+            var growthPercentage = calculatePercentageChange(dataset[0], dataset[dataset.length - 1]);
+            var prevIntervalChange = calculatePercentageChange(dataset[dataset.length - 2], dataset[dataset.length - 1]);
+
+            var statisticsContent = `
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">${title}</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Макс. значение:</dt>
+                        <dd class="col-sm-6">${max} (${formatDate(labels[dataset.indexOf(max)])})</dd>
+                        <dt class="col-sm-6">Мин. значение:</dt>
+                        <dd class="col-sm-6">${min} (${formatDate(labels[dataset.indexOf(min)])})</dd>
+                        <dt class="col-sm-6">Сред. значение:</dt>
+                        <dd class="col-sm-6">${average.toFixed(2)}</dd>
+                        <dt class="col-sm-6">Рост с начала отсчета:</dt>
+                        <dd class="col-sm-6">${growthPercentage.toFixed(2)}%</dd>
+                        <dt class="col-sm-6">Рост с предыдущего интервала:</dt>
+                        <dd class="col-sm-6">${prevIntervalChange.toFixed(2)}%</dd>
+                    </dl>
+                </div>
+            </div>
+        `;
+
+            $('#' + containerId).append(statisticsContent);
+        }
+
+
+        // График "Внедрения"
+        var chartDeployData = {
+            labels: @Html.Raw(multDates),
+            datasets: [{
+                label: "Внедрения",
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                data: @Html.Raw(multDeploys)
+                        }]
+        };
+
+        var chartClientData = {
+            labels: @Html.Raw(multDates),
+            datasets: [{
+                label: "Клиенты",
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                data: @Html.Raw(multClients)
+                        }]
+        };
+
+        var chartClientCtx = document.getElementById("commonClientsChart").getContext('2d');
+
+
+        var chartDeployCtx = document.getElementById("chartDeploy").getContext('2d');
+        
+        var chartDeployOptions = {
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        min: 0,
+                        beginAtZero: true,
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    gridLines: {
+                        display: true,
+                        color: "rgba(255,99,164,0.2)"
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        min: 0,
+                        beginAtZero: true,
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    gridLines: {
+                        display: true
+                    }
+                }]
+            },
+            legend: {
+                labels: {
+                    fontColor: 'rgba(255, 255, 255, 0.7)'
+                }
+            }
+        };
+        createChart(chartDeployCtx, chartDeployData, chartDeployOptions, 'bar');
+        createChart(chartClientCtx, chartClientData, chartDeployOptions, 'bar');
+
+        // Вызываем функцию для анализа и вывода статистических данных для графика "Внедрения"
+        displayStatistics(@Html.Raw(multDates), @Html.Raw(multDeploys), 'Аналитика "Внедрения"', 'statisticsDeploy');
+
+        // График "Выручка"
+        var stackedBarChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                xAxes: [{
+                    stacked: true,
+                    ticks: {
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    }
+                }],
+                yAxes: [{
+                    stacked: true,
+                    ticks: {
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    }
+                }]
+            },
+            legend: {
+                labels: {
+                    fontColor: 'rgba(255, 255, 255, 0.7)'
+                }
+            }
+        };
+
+        createStackedBarChart(@Html.Raw(multDates), @Html.Raw(multRenewRev), @Html.Raw(multSalesRev), 'Выручка', 'dataRev');
+
+        displayStatistics(@Html.Raw(multDates), @Html.Raw(multSalesRev), 'Аналитика "Продажи"', 'statisticsRev');
+        displayStatistics(@Html.Raw(multDates), @Html.Raw(multRenewRev), 'Аналитика "Продления"', 'statisticsRev');
+
+        function createStackedBarChart(labels, dataset1, dataset2, chartTitle, chartId) {
+            var ctx = document.getElementById(chartId).getContext('2d');
+            var chartData = {
+                labels: labels,
+                datasets: [{
+                    label: 'Продления',
+                    data: dataset1,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Продажи',
+                    data: dataset2,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }
+                ]
+            };
+            createChart(ctx, chartData, stackedBarChartOptions, 'bar');
+        }
+    });
+</script>

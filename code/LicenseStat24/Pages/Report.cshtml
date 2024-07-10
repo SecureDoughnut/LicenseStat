@@ -1,0 +1,54 @@
+﻿@page
+@model LicenseStat24.Pages.ReportModel
+@{
+    ViewData["Title"] = "Создание отчета";
+
+    // На странице реализована форма для отправки данных PagePostReport в обработчик
+    // В обработчике получаем данные из базы, рассчитываем и заменяем метки в шаблоне отчета reportTemplate.html
+}
+
+<div class="content-wrapper">
+    <section class="content">
+        <div class="container-fluid">
+            <br>
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-edit"></i>
+                        Создание отчета
+                    </h3>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <form method="post" asp-antiforgery="true">
+                                <div class="form-group">
+                                    <label for="startDate">Начальная дата</label>
+                                    <input value="@string.Format("{0:yyyy-MM-dd}", Model.pageRepMod.startDate)" type="date" class="form-control" id="startDate" name="pageRepMod.startDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="endDate">Конечная дата</label>
+                                    <input value="@string.Format("{0:yyyy-MM-dd}", Model.pageRepMod.endDate)" type="date" class="form-control" id="endDate" name="pageRepMod.endDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="modDate">Способ разбиения на подинтервалы</label>
+                                    <select class="form-control" id="modDate" name="pageRepMod.modDate" required>
+                                        <option value="1">По неделям</option>
+                                        <option value="2" selected>По месяцам</option>
+                                        <option value="3">По кварталам</option>
+                                        <option value="4">По полугодиям</option>
+                                        <option value="5">По годам</option>
+                                    </select>
+                                    <div id="selectedValue"></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Получить отчет</button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

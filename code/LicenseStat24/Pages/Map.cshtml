@@ -1,0 +1,183 @@
+﻿@page
+@using LicenseStat24.PageCalcs
+@using static LicenseStat24.PageCalcs.DataHelper;
+
+@model MapModel
+@{
+
+    ViewData["Title"] = "Карта внедрений";
+
+    // Получаем всех клиентов и разбиваем их по типу активности
+    // Отображаем на карте Yandex в виде меток
+
+    List<ClientCalc> clientCalc = new List<ClientCalc>();
+
+    foreach (var item in Model.clients)
+    {
+        ClientCalc cc = new ClientCalc(item);
+        clientCalc.Add(cc);
+    }
+    var activeClients = clientCalc.Where(client => client.allLicenses.Any(license => IsValidLicense(license) && license.LicEndDate >= Model.pageMod.endDate)).ToList();
+    var inactiveClients = clientCalc.Except(activeClients).ToList();
+
+    int activeCount = activeClients.Count;
+    int inactiveCount = inactiveClients.Count;
+    int clientsCount = clientCalc.Count();
+
+}
+
+<div class="content-wrapper">
+    <section class="content">
+        <br>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Георграфия всех клиентов базы</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="useGroupingCheckbox">
+                                <label class="custom-control-label" for="useGroupingCheckbox">Без группировки</label>
+                            </div>
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="activeClientsCheckbox" checked>
+                                <label class="custom-control-label" for="activeClientsCheckbox">Только активные</label>
+                            </div>
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="inactiveClientsCheckbox">
+                                <label class="custom-control-label" for="inactiveClientsCheckbox">Только ушедшие</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <dd class="col-sm-6">
+                                Всего: @Html.Raw(clientsCount)</dd>
+                            <dd class="col-sm-6">
+                                Активных: @Html.Raw(activeCount)</dd>
+                            <dd class="col-sm-6">Ушедших: @Html.Raw(inactiveCount)</dd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="map" style="height: 1080px; width: 100%;"></div>
+    </section>
+</div>
+
+
+<script src="https://api-maps.yandex.ru/2.1/?apikey=YOUR_API_KEY&lang=en_US&style=stylers.lightness:invert" type="text/javascript"></script>
+
+@* Карта внедрений*@
+<script>
+    ymaps.ready(async function () {
+        const map = new ymaps.Map("map", {
+            center: [55.755814, 37.617635],
+            zoom: 5
+        });
+
+        const activeClients = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(activeClients.Where(c => c.thisClient.CliActualAddress != null).ToList()));
+        const inactiveClients = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(inactiveClients.Where(c => c.thisClient.CliActualAddress != null).ToList()));
+
+        const useGroupingCheckbox = document.getElementById('useGroupingCheckbox');
+        const activeClientsCheckbox = document.getElementById('activeClientsCheckbox');
+        const inactiveClientsCheckbox = document.getElementById('inactiveClientsCheckbox');
+
+        let groupByCoordinates = false; // По умолчанию группировка включена
+
+        // Создаем кластеризатор с учетом начального состояния группировки
+        const clusterer = new ymaps.Clusterer({
+            groupByCoordinates: groupByCoordinates
+        });
+        map.geoObjects.add(clusterer);
+
+        // Обновляем значение группировки при изменении состояния чекбокса
+        useGroupingCheckbox.addEventListener('change', function () {
+            groupByCoordinates = useGroupingCheckbox.checked;
+            clusterer.options.set('groupByCoordinates', groupByCoordinates);
+            filterMarkers();
+        });
+
+        // Фильтрация маркеров при изменении состояния чекбоксов
+        activeClientsCheckbox.addEventListener('change', filterMarkers);
+        inactiveClientsCheckbox.addEventListener('change', filterMarkers);
+
+        async function filterMarkers() {
+            const activeOnly = activeClientsCheckbox.checked;
+            const inactiveOnly = inactiveClientsCheckbox.checked;
+
+            clusterer.removeAll();
+
+            const clients = [];
+            if (activeOnly) clients.push(...activeClients.map(client => ({ client, active: true })));
+            if (inactiveOnly) clients.push(...inactiveClients.map(client => ({ client, active: false })));
+            if (!activeOnly && !inactiveOnly) {
+                clients.push(...activeClients.map(client => ({ client, active: true })));
+                clients.push(...inactiveClients.map(client => ({ client, active: false })));
+            }
+
+            const markersPromises = clients.map(async function ({ client, active }) {
+                try {
+                    const res = await ymaps.geocode(client.thisClient.CliActualAddress, { results: 1 });
+                    const geoObject = res.geoObjects.get(0);
+                    if (!geoObject) {
+                        console.error(`Не удалось найти метку для клиента: ID=${client.thisClient.CliId}, Имя=${client.thisClient.CliFullName}`);
+                        return null;
+                    }
+                    const location = geoObject.geometry.getCoordinates();
+                    const markerColor = active ? 'blue' : 'red';
+
+                    const placemark = new ymaps.Placemark(location, {
+                        hintContent: client.thisClient.CliActualAddress,
+                        balloonContent: `<div>
+                                             <p>${client.thisClient.CliFullName}</p>
+                                             <p>${client.thisClient.CliEmail}</p>
+                                             <p>${client.thisClient.CliPhoneNumber}</p>
+                                             <p>${client.thisClient.CliActualAddress}</p>
+                                             <a href="/Client?CliId=${client.thisClient.CliId}" target="_blank">Подробнее</a>
+                                         </div>`
+                    }, {
+                        openBalloonOnClick: true,
+                        iconColor: markerColor
+                    });
+
+                    placemark.events.add('mouseenter', function (e) {
+                        e.get('target').balloon.open();
+                    });
+                    placemark.balloon.events.add('mouseleave', function () {
+                        placemark.balloon.close();
+                    });
+
+                    clusterer.add(placemark);
+                    return location;
+                } catch (error) {
+                    console.error(`Ошибка при обработке клиента: ID=${client.thisClient.CliId}, Имя=${client.thisClient.CliFullName}`, error);
+                    return null;
+                }
+            });
+
+            const markersCoordinates = (await Promise.all(markersPromises)).filter(Boolean);
+
+            if (markersCoordinates.length > 0) {
+                map.setBounds(ymaps.util.bounds.fromPoints(markersCoordinates), {
+                    checkZoomRange: true
+                });
+            }
+        }
+
+        // Вызываем фильтрацию маркеров для первоначальной загрузки страницы
+        await filterMarkers();
+    });
+</script>

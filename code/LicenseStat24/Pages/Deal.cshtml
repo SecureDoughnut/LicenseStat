@@ -1,0 +1,260 @@
+﻿@page
+@using LicenseStat24.NewModels;
+@using LicenseStat24.PageCalcs;
+
+@model DealModel
+@{
+    ClientCalc calc = new ClientCalc(Model.client, Model.DealId);
+    ViewData["Title"] = "СДЕЛКА - " + calc.cliDeal[0].DealNum;
+
+    // На странице показана конкретная сделка и включенные в нее лицензии различного типа
+    // Выручка считается только для продаж и продлений, замены и расширения просто выводятся без каких либо расчетов
+    // Класс калькулятор - ClientCalc
+
+}
+
+<div class="content-wrapper">
+
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Информация по сделке</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="content">
+
+        <br>
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-handshake"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Номер сделки</span>
+                        <span class="info-box-number">@Html.Raw(calc.cliDeal[0].DealNum)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-clock"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Дата сделки</span>
+                        <span class="info-box-number">@Html.Raw(calc.cliDeal[0].DealDate.ToString("dd-MM-yy"))</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Сумма сделки</span>
+                        <span class="info-box-number">@Html.Raw(calc.renewsRevenue + calc.salesRevenue) руб</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Детали сделки</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table id="positionsTable" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Тип</th>
+                                    <th>Позиция</th>
+                                    <th>Количество</th>
+                                    <th>Выручка, руб</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    // Выводим продажи в этой сделке
+                                    for (int i = 0; i < calc.tableConfSales.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                    @Html.Raw("Продажа конф")
+                                                else
+                                                    @Html.Raw(string.Empty)
+
+                                            </td>
+                                            <td>@Html.Raw(calc.tableConfSales[i].Name)</td>
+                                            <td>@Html.Raw(calc.tableConfSales[i].Sales)</td>
+                                            <td>@Html.Raw(calc.tableConfSales[i].Revenue)</td>
+                                        </tr>
+                                    }
+
+                                    for (int i = 0; i < calc.tableModSales.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                    @Html.Raw("Продажа мод")
+                                                else
+                                                    @Html.Raw(string.Empty)
+
+                                            </td>
+                                            <td>@Html.Raw(calc.tableModSales[i].Name)</td>
+                                            <td>@Html.Raw(calc.tableModSales[i].Sales)</td>
+                                            <td>@Html.Raw(calc.tableModSales[i].Revenue)</td>
+                                        </tr>
+                                    }
+
+                                    // Продления
+                                    for (int i = 0; i < calc.tableRenews.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                    @Html.Raw("Продления")
+                                                else
+                                                    @Html.Raw(string.Empty)
+                                            </td>
+                                            <td>@Html.Raw(calc.tableRenews[i].Name)</td>
+                                            <td>@Html.Raw(calc.tableRenews[i].Sales)</td>
+                                            <td>@Html.Raw(calc.tableRenews[i].Revenue)</td>
+                                        </tr>
+                                    }
+
+                                    // Расширения 
+                                    for (int i = 0; i < calc.tableConfExpands.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                    @Html.Raw("Расширение конф")
+                                                else
+                                                    @Html.Raw(string.Empty)
+                                            </td>
+                                            <td>@Html.Raw(calc.tableConfExpands[i].Name)</td>
+                                            <td>@Html.Raw(calc.tableConfExpands[i].Sales)</td>
+                                            <td>@Html.Raw(calc.tableConfExpands[i].Revenue)</td>
+                                        </tr>
+                                    }
+
+                                    for (int i = 0; i < calc.tableModExpands.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                    @Html.Raw("Расширение мод")
+                                                else
+                                                    @Html.Raw(string.Empty)
+                                            </td>
+                                            <td>@Html.Raw(calc.tableModExpands[i].Name)</td>
+                                            <td>@Html.Raw(calc.tableModExpands[i].Sales)</td>
+                                            <td>@Html.Raw(calc.tableModExpands[i].Revenue)</td>
+                                        </tr>
+                                    }
+
+                                    // Замены
+                                    for (int i = 0; i < calc.tableConfChanges.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                    @Html.Raw("Замена конф")
+                                                else
+                                                    @Html.Raw(string.Empty)
+
+                                            </td>
+                                            <td>@Html.Raw(calc.tableConfChanges[i].Name)</td>
+                                            <td>@Html.Raw(calc.tableConfChanges[i].Sales)</td>
+                                            <td>@Html.Raw(calc.tableConfChanges[i].Revenue)</td>
+                                        </tr>
+                                    }
+
+                                    for (int i = 0; i < calc.tableModChanges.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                    @Html.Raw("Замена мод")
+                                                else
+                                                    @Html.Raw(string.Empty)
+
+                                            </td>
+                                            <td>@Html.Raw(calc.tableModChanges[i].Name)</td>
+                                            <td>@Html.Raw(calc.tableModChanges[i].Sales)</td>
+                                            <td>@Html.Raw(calc.tableModChanges[i].Revenue)</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Клиент</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Организация</th>
+                                <td>@Html.Raw(Model.client.CliFullName)</td>
+                            </tr>
+                            <tr>
+                                <th>Директор</th>
+                                <td>@Html.Raw(Model.client.CliDirectorName)</td>
+                            </tr>
+                            <tr>
+                                <th>Почта</th>
+                                <td>
+                                    @{
+                                        if (!string.IsNullOrEmpty(Model.client.CliEmail))
+                                        {
+                                            @Html.Raw(Model.client.CliEmail)
+                                        }
+                                        else
+                                        {
+                                            @:empty
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Телефон</th>
+                                <td>@Html.Raw(Model.client.CliPhoneNumber)</td>
+                            </tr>
+                        </table>
+                        <br>
+                        <div class="text-right">
+                            <a href="/Client?CliId=@Html.Raw(Model.client.CliId)" target="_blank" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>

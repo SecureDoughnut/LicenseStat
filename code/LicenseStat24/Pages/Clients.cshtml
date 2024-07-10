@@ -1,0 +1,556 @@
+﻿@page
+@using LicenseStat24.NewModels;
+@using LicenseStat24.PageCalcs;
+@using static LicenseStat24.PageCalcs.DataHelper;
+@model LicenseStat24.Pages.ClientsModel
+@{
+
+    ViewData["Title"] = "Клиенты компании";
+
+    // На странице приведены таблицы клиетов с различным типом активности
+    // Класс-калькулятор - ClientCalc
+
+
+    double avgSellRevenue = 0;
+    double avgRenewRevenue = 0;
+    double totalLTV = 0;
+
+    List<ClientCalc> deadClients = new List<ClientCalc>();
+    List<ClientCalc> activeClients = new List<ClientCalc>();
+    List<ClientCalc> newClients = new List<ClientCalc>();
+    List<ClientCalc> clients = new List<ClientCalc>();
+
+
+    foreach (var client in DataHelper.cliSingle.clients)
+        clients.Add(new ClientCalc(client));
+
+    activeClients = clients.Where(client => client.allLicenses.Any(license => IsValidLicense(license) && license.LicEndDate >= Model.pageMod.endDate)).ToList();
+    deadClients = clients.Except(activeClients).ToList();
+
+    // считаем новых клиентов
+    foreach (var client in DataHelper.cliAllData.clients
+    .Where(c => c.CliContracts.Count == 1 && c.CliContracts.All(co => co.ContDate >= Model.pageMod.startDate && co.ContDate <= Model.pageMod.endDate))
+    .ToList())
+    {
+        newClients.Add(new ClientCalc(client));
+    }
+   
+
+
+    if (clients.Count != 0)
+    {
+        // все продажи и продления клиентам не равные нулю
+        var allClientsSales = clients.Where(client => client.salesRevenue != 0);
+        var allClientsRenews = clients.Where(client => client.renewsRevenue != 0);
+        // средние значения по клиентам на картах
+        avgSellRevenue = allClientsSales.Count() != 0 ? allClientsSales.Sum(client => client.salesRevenue) / allClientsSales.Count() : 0;
+        avgRenewRevenue = allClientsSales.Count() != 0 ? allClientsRenews.Sum(client => client.renewsRevenue) / allClientsRenews.Count() : 0;
+
+        totalLTV = (clients.Where(client => client.salesRevenue != 0).Sum(client => client.salesRevenue)) / clients.Count;
+
+    }
+    
+    string multDates = "";
+
+    // то же самое, все продажи и продления клиентам не равные нулю, но для графиков
+    List<double> avgSellRevList = new List<double>();
+    List<double> avgRenewRevList = new List<double>();
+
+    List<int> ltvList = new List<int>();
+
+    if (Model.pageMod.modDate > 0)
+    {
+
+        multDates = Newtonsoft.Json.JsonConvert.SerializeObject(DataHelper.cliMultiple.Select(x => x.startDate.ToString("dd-MM-yy")).ToList());
+
+        foreach (ClientEx item in DataHelper.cliMultiple)
+        {
+            List<ClientCalc> rangedCalc = new List<ClientCalc>();
+            foreach (Client cli in item.clients)
+                rangedCalc.Add(new ClientCalc(cli));
+
+            if (rangedCalc.Count != 0)
+            {
+                var rngClientsSales = rangedCalc.Where(client => client.salesRevenue != 0);
+                var rngClientsRenews = rangedCalc.Where(client => client.renewsRevenue != 0);
+
+                if (rngClientsSales.Count() != 0)
+                    avgSellRevList.Add(rngClientsSales.Sum(client => client.salesRevenue) / rngClientsSales.Count());
+                else
+                    avgSellRevList.Add(0);
+
+                if (rngClientsRenews.Count() != 0)
+                    avgRenewRevList.Add(rngClientsRenews.Sum(client => client.renewsRevenue) / rngClientsRenews.Count());
+                else
+                    avgRenewRevList.Add(0);
+
+                ltvList.Add(rangedCalc.Where(client => client.salesRevenue != 0).Sum(client => client.salesRevenue) / rangedCalc.Count);
+            }
+            else
+            {
+                avgSellRevList.Add(0);
+                avgRenewRevList.Add(0);
+
+                ltvList.Add(0);
+            }
+
+
+        }
+    }
+}
+
+<div class="content-wrapper">
+
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12">
+                    <h1 class="m-0">Информация по клиентам</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box mb-3">
+                        <span class="info-box-icon bg-info elevation-1"><i class="fas fa-user-plus"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Активные</span>
+                            <span class="info-box-number">@Html.Raw(activeClients.Count)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box mb-3">
+                        <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-user-minus"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Ушедшие</span>
+                            <span class="info-box-number">@Html.Raw(deadClients.Count)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box mb-3">
+                        <span class="info-box-icon bg-info elevation-1"><i class="fas fa-handshake"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Средняя выручка продаж</span>
+                            <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", avgSellRevenue)) руб</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box mb-3">
+                        <span class="info-box-icon bg-success elevation-1"><i class="fas fa-handshake"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Средняя выручка продлений</span>
+                            <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", avgRenewRevenue)) руб</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs" id="clientsTable" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="new-tab" data-toggle="pill" href="#new" role="tab" aria-controls="new" aria-selected="true">Новые</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="active-tab" data-toggle="pill" href="#active" role="tab" aria-controls="active" aria-selected="false">Активные</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="dead-tab" data-toggle="pill" href="#dead" role="tab" aria-controls="dead" aria-selected="false">Ушедшие</a>
+                        </li>
+
+                        @{
+                            if (Model.pageMod.modDate > 0)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" id="metrics-tab" data-toggle="pill" href="#metrics" role="tab" aria-controls="metrics" aria-selected="false">Метрики</a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="tab-content" id="dealTypesTableContent">
+
+                        <div class="tab-pane fade show active" id="new" role="tabpanel" aria-labelledby="new-tab">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <table id="cliTableNew" class="table table-bordered table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Название</th>
+                                                        <th>Почта</th>
+                                                        <th>Телефон</th>
+                                                        <th>ФИО директора</th>
+                                                        <th>Выручка с продаж</th>
+                                                        <th>Выручка с продлений</th>
+                                                        <th>Подробнее</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        foreach (ClientCalc cCalc in newClients.OrderBy(item => item.salesRevenue).ToList())
+                                                        {
+                                                            <tr>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliFullName)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliEmail)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliPhoneNumber)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliDirectorName)</td>
+                                                                <td>@Html.Raw(cCalc.salesRevenue)</td>
+                                                                <td>@Html.Raw(cCalc.renewsRevenue)</td>
+
+                                                                <td><a href="/Client?CliId=@Html.Raw(cCalc.thisClient.CliId)" target="_blank" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> Подробнее</a></td>
+                                                            </tr>
+                                                        }
+
+
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="active" role="tabpanel" aria-labelledby="active-tab">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <table id="cliTableActive" class="table table-bordered table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Название</th>
+                                                        <th>Почта</th>
+                                                        <th>Телефон</th>
+                                                        <th>ФИО директора</th>
+                                                        <th>Выручка с продаж</th>
+                                                        <th>Выручка с продлений</th>
+                                                        <th>Подробнее</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        foreach (ClientCalc cCalc in activeClients.OrderBy(item => item.salesRevenue).ToList())
+                                                        {
+                                                            <tr>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliFullName)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliEmail)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliPhoneNumber)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliDirectorName)</td>
+                                                                <td>@Html.Raw(cCalc.salesRevenue)</td>
+                                                                <td>@Html.Raw(cCalc.renewsRevenue)</td>
+
+                                                                <td><a href="/Client?CliId=@Html.Raw(cCalc.thisClient.CliId)" target="_blank" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> Подробнее</a></td>
+                                                            </tr>
+                                                        }
+
+
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="dead" role="tabpanel" aria-labelledby="dead-tab">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <table id="cliTableDead" class="table table-bordered table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Название</th>
+                                                        <th>Почта</th>
+                                                        <th>Телефон</th>
+                                                        <th>ФИО директора</th>
+                                                        <th>Выручка с продаж</th>
+                                                        <th>Выручка с продлений</th>
+                                                        <th>Подробнее</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        foreach (ClientCalc cCalc in deadClients.OrderBy(item => item.salesRevenue).ToList())
+                                                        {
+                                                            <tr>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliFullName)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliEmail)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliPhoneNumber)</td>
+                                                                <td>@Html.Raw(cCalc.thisClient.CliDirectorName)</td>
+                                                                <td>@Html.Raw(cCalc.salesRevenue)</td>
+                                                                <td>@Html.Raw(cCalc.renewsRevenue)</td>
+
+                                                                <td><a href="/Client?CliId=@Html.Raw(cCalc.thisClient.CliId)" target="_blank" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> Подробнее</a></td>
+                                                            </tr>
+                                                        }
+
+
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @{
+                            if (Model.pageMod.modDate > 0)
+                            {
+                                <div class="tab-pane fade" id="metrics" role="tabpanel" aria-labelledby="metrics-tab">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">Средняя выручка от продаж</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart">
+                                                    <canvas id="aovChart1" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                                </div>
+                                            </div>
+
+                                            <div class="card-header">
+                                                <h3 class="card-title">Средняя выручка от продлений</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart">
+                                                    <canvas id="aovChart2" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        var chartName = "aovChart1";
+        var ctx = document.getElementById(chartName).getContext('2d');
+        var data = {
+            labels: @Html.Raw(multDates),
+            datasets: [
+                {
+                    label: "Средняя выручка продаж",
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(avgSellRevList))
+                    }
+            ]
+        };
+
+        var options = {
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        min: 0,
+                        beginAtZero: true,
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    gridLines: {
+                        display: true,
+                        color: "rgba(255,99,164,0.2)"
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        min: 0,
+                        beginAtZero: true,
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    gridLines: {
+                        display: false
+                    }
+                }]
+            },
+            legend: {
+                labels: {
+                    fontColor: 'rgba(255, 255, 255, 0.7)'
+                }
+            }
+        };
+
+        var myChart = new Chart(ctx, {
+            options: options,
+            data: data,
+            type: 'bar'
+
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        var chartName = "aovChart2";
+        var ctx = document.getElementById(chartName).getContext('2d');
+        var data = {
+            labels: @Html.Raw(multDates),
+            datasets: [
+                {
+                    label: "Средняя выручка продлений",
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(avgRenewRevList))
+                        }
+            ]
+        };
+
+        var options = {
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        min: 0,
+                        beginAtZero: true,
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    gridLines: {
+                        display: true,
+                        color: "rgba(255,99,164,0.2)"
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        min: 0,
+                        beginAtZero: true,
+                        fontColor: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    gridLines: {
+                        display: false
+                    }
+                }]
+            },
+            legend: {
+                labels: {
+                    fontColor: 'rgba(255, 255, 255, 0.7)'
+                }
+            }
+        };
+
+        var myChart = new Chart(ctx, {
+            options: options,
+            data: data,
+            type: 'bar'
+
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        var chartName = "ltvChart";
+        var ctx = document.getElementById(chartName).getContext('2d');
+        var data = {
+            labels: @Html.Raw(multDates),
+            datasets: [
+                {
+                    label: "Средняя пожизненная ценность",
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ltvList))
+                        }
+            ]
+        };
+
+        var options = {
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        min: 0,
+                        beginAtZero: true
+                    },
+                    gridLines: {
+                        display: true,
+                        color: "rgba(255,99,164,0.2)"
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        min: 0,
+                        beginAtZero: true
+                    },
+                    gridLines: {
+                        display: false
+                    }
+                }]
+            },
+            legend: {
+                labels: {
+                    fontColor: 'rgba(255, 255, 255, 0.7)'
+                }
+            }
+        };
+
+        var myChart = new Chart(ctx, {
+            options: options,
+            data: data,
+            type: 'bar'
+
+        });
+    });
+</script>
+
+<script>
+    $(function () {
+        $('#cliTableActive').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+        $('#cliTableDead').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+        $('#cliTableNew').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+    });
+
+</script>

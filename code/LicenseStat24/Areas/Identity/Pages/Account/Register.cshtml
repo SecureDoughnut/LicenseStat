@@ -1,0 +1,119 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Управление пользователями";
+    var usermg = Model._userManager;
+    var users = Model._userManager.Users.ToList();
+}
+
+<style>
+    .action-buttons a,
+    .action-buttons button,
+    .action-buttons form {
+        margin-right: 5px;
+        display: inline-block; /* Убедитесь, что элементы располагаются в одну линию */
+    }
+
+    .action-buttons form {
+        margin: 0;
+    }
+</style>
+
+
+<div class="content-wrapper">
+    <section class="content">
+        <div class="container-fluid">
+            <br>
+            <div class="row">
+                <br>
+                <div class="col-md-6">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-edit"></i>
+                                Регистрация пользователя
+                            </h3>
+                        </div>
+
+                        <div class="card-body">
+                            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                                <hr />
+                                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <label asp-for="Input.Role"></label>
+                                    <select asp-for="Input.Role" asp-items="Model.AvailableRoles" class="form-control">
+                                        <option value="">Select Role</option>
+                                    </select>
+                                    <span asp-validation-for="Input.Role" class="text-danger"></span>
+
+                                </div>
+                                <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Добавить пользователя</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="col-md-6">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-users"></i>
+                                Таблица пользователей
+                            </h3>
+                        </div>
+
+                        <div class="card-body">
+                            <table id="usersTable" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Почта</th>
+                                        <th>Роль</th>
+                                        <th>Действие</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        foreach (LicenseStat24User usr in users)
+                                        {
+                                            <tr>
+                                                <td>@Html.Raw(usr.Email)</td>
+                                                <td>@Html.Raw(usermg.GetRolesAsync(usr).Result.First())</td>
+                                                <td>
+                                                    <div class="action-buttons">
+                                                        <a href="/Identity/Account/Edit?id=@usr.Id" class="btn btn-info btn-sm">Изменить</a>
+
+                                                        <form asp-page-handler="DeleteUser" method="post" style="display: inline;">
+                                                            <input type="hidden" name="userId" value="@usr.Id" />
+                                                            <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

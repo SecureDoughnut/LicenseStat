@@ -1,0 +1,27 @@
+﻿@page
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Confirm email";
+}
+<div class="wrapper">
+    <div class="content-wrapper">
+        <section class="content">
+            <div class="container-fluid">
+                <br>
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-edit"></i>
+                            Подтверждение регистрации
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <partial name="_StatusMessage" model="Model.StatusMessage" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

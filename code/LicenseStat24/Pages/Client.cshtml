@@ -1,0 +1,799 @@
+﻿@page
+@using LicenseStat24.NewModels;
+@using LicenseStat24.PageCalcs;
+@using static LicenseStat24.PageCalcs.DataHelper;
+
+@model ClientModel
+@{
+    ViewData["Title"] = "КЛИЕНТ - " + Model.client.CliFullName;
+
+    // Страница конкретного клиента компании
+    // Класс калькулятор ClientCalc
+
+    ClientCalc cliCalc = new ClientCalc(Model.client);
+
+    // сгруппированы для бубликов
+    var confSellsCount = cliCalc.GroupBySales(cliCalc.tableConfSales);
+    var confSellsRev = cliCalc.GroupByRev(cliCalc.tableConfSales);
+
+    var modSellsCount = cliCalc.GroupBySales(cliCalc.tableModSales);
+    var modSellsRev = cliCalc.GroupByRev(cliCalc.tableModSales);
+
+    var allRenewCount = cliCalc.GroupBySales(cliCalc.tableRenews);
+    var allRenewRev = cliCalc.GroupByRev(cliCalc.tableRenews);
+
+}
+<div class="content-wrapper">
+
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12">
+                    <h1 class="m-0">Информация по клиенту @Html.Raw(Model.client.CliFullName)</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="content">
+        <div class="container-fluid">
+            <ul class="nav nav-tabs" id="clientInfoTable" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="common-tab" data-toggle="pill" href="#common" role="tab" aria-controls="common" aria-selected="true">Общее</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="client-tab" data-toggle="pill" href="#client" role="tab" aria-controls="client" aria-selected="false">О клиенте</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="sales-tab" data-toggle="pill" href="#sales" role="tab" aria-controls="sales" aria-selected="false">Продажи</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="renews-tab" data-toggle="pill" href="#renews" role="tab" aria-controls="renews" aria-selected="false">Продления</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="deals-tab" data-toggle="pill" href="#deals" role="tab" aria-controls="deals" aria-selected="false">Сделки</a>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="clientInfoTable">
+
+                <div class="tab-pane fade show active" id="common" role="tabpanel" aria-labelledby="common-tab">
+                    <br>
+                    <div class="row">
+
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <div class="info-box mb-3">
+                                <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Общая выручка</span>
+                                    <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", cliCalc.tableConfSales.Sum(product => product.Revenue) + cliCalc.tableModSales.Sum(product => product.Revenue) + cliCalc.tableRenews.Sum(product => product.Revenue))) руб</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <div class="info-box mb-3">
+                                <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Средний чек продаж</span>
+                                    <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", cliCalc.averageCheck)) руб</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <div class="info-box mb-3">
+                                <span class="info-box-icon bg-info elevation-1"><i class="fas fa-handshake"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Выручка с продаж</span>
+                                    <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", cliCalc.tableConfSales.Sum(product => product.Revenue) + cliCalc.tableModSales.Sum(product => product.Revenue))) руб</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <div class="info-box mb-3">
+                                <span class="info-box-icon bg-info elevation-1"><i class="fas fa-receipt"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Выручка с продлений</span>
+                                    <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", cliCalc.tableRenews.Sum(product => product.Revenue))) руб</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Топовые категории</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <table id="topTable" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Имя</th>
+                                                <th>Количество, шт</th>
+                                                <th>Выручка, руб</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                foreach (ProductTable prod in cliCalc.combinedProd.OrderByDescending(product => product.Revenue).ToList())
+                                                {
+                                                    <tr>
+                                                        <td>@Html.Raw(prod.Name)</td>
+                                                        <td>@Html.Raw(prod.Sales)</td>
+                                                        <td>@Html.Raw(prod.Revenue)</td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Соотношение выручки</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="dealsProfit" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Соотношение продаж</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="dealsSells" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                @*Продажи*@
+                <div class="tab-pane fade" id="sales" role="tabpanel" aria-labelledby="sales-tab">
+
+                    @*Вкладки*@
+                    <ul class="nav nav-tabs" id="salesTypesTable" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="configs-tab" data-toggle="pill" href="#configs" role="tab" aria-controls="configs" aria-selected="true">Конфигурации</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="modules-tab" data-toggle="pill" href="#modules" role="tab" aria-controls="modules" aria-selected="false">Модули</a>
+                        </li>
+                    </ul>
+                    @*Конфиги и модули*@
+                    <div class="tab-content" id="salesTypesTableContent">
+
+                        <br>
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box mb-3">
+                                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-desktop"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Выручка с конфигураций</span>
+                                        <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", cliCalc.tableConfSales.Sum(product => product.Revenue))) руб</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box mb-3">
+                                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-desktop"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Выручка с модулей</span>
+                                        <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", cliCalc.tableModSales.Sum(product => product.Revenue))) руб</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box mb-3">
+                                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Общая выручка c продаж</span>
+                                        <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", cliCalc.tableConfSales.Sum(product => product.Revenue) + cliCalc.tableModSales.Sum(product => product.Revenue))) руб</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box mb-3">
+                                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-handshake"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Количество продаж</span>
+                                        <span class="info-box-number">@Html.Raw(String.Format("{0:n0}", cliCalc.tableConfSales.Sum(product => product.Sales)))</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="configs" role="tabpanel" aria-labelledby="configs-tab">
+
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Количество продаж по конфигурациям</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="confSellsCount" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Выручка от продаж по конфигурациям</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="confSellsRev" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="tab-pane fade" id="modules" role="tabpanel" aria-labelledby="modules-tab">
+                            <br>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Количество продаж по модулям</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="modSellsCount" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Выручка от продаж по модулям</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="modSellsRev" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                @*Продления*@
+                <div class="tab-pane fade" id="renews" role="tabpanel" aria-labelledby="renews-tab">
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Количество продлений</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="allRenewCount" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Выручка от продлений</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="allRenewRev" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @*О клиенте*@
+                <div class="tab-pane fade" id="client" role="tabpanel" aria-labelledby="client-tab">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Детально</h3>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th>Организация</th>
+                                            <td>@Html.Raw(Model.client.CliFullName)</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Статус</th>
+                                            <td>
+                                                @{
+                                                    if (cliCalc.cliActive)
+                                                    {
+                                                        @: Активный клиент
+                                                    }
+                                                    else
+                                                    {
+                                                        @: Ушедший клиент
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Директор</th>
+                                            <td>@Html.Raw(Model.client.CliDirectorName)</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Почта</th>
+                                            <td>
+                                                @{
+                                                    if (!string.IsNullOrEmpty(Model.client.CliEmail))
+                                                    {
+                                                        @Html.Raw(Model.client.CliEmail)
+                                                    }
+                                                    else
+                                                    {
+                                                        @: Empty
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Телефон</th>
+                                            <td>@Html.Raw(Model.client.CliPhoneNumber)</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @*Таблица сделок*@
+                <div class="tab-pane fade" id="deals" role="tabpanel" aria-labelledby="deals-tab">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Детально</h3>
+                                </div>
+                                <div class="card-body">
+                                    <input type="checkbox" id="toggleOrdering"> Включить сортировку
+                                    <br>
+                                    <table id="tableDeals" class="table table-bordered table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Номер сделки</th>
+                                                <th>Дата сделки</th>
+                                                <th>ID контракта</th>
+                                                <th>Выручка руб</th>
+                                                <th>Подробнее</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                foreach (DealsTable deal in cliCalc.cliDealConverted)
+                                                {
+                                                    <tr>
+                                                        <td>@Html.Raw(deal.DealNum)</td>
+                                                        <td>@Html.Raw(deal.DealDate.ToString("dd-MM-yy"))</td>
+                                                        <td>@Html.Raw(deal.ContID)</td>
+                                                        <td>@Html.Raw(deal.Revenue)</td>
+                                                        <td><a href="/Deal?CliId=@Html.Raw(deal.CliId)&DealId=@Html.Raw(deal.DealID)" target="_blank" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> Подробнее</a></td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        // Обработчик события переключения вкладок
+        $('#clientInfoTable a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+            // Если переключаемся на вкладку "sales", устанавливаем активность на вкладке "configs"
+            if (e.target.id === "sales-tab") {
+                $("#configs-tab").addClass("active");
+                $("#configs").addClass("active show");
+
+                // Убираем активность с предыдущей вкладки "modules"
+                $("#modules-tab").removeClass("active");
+                $("#modules").removeClass("active show");
+            }
+        });
+    });
+</script>
+
+
+<script>
+    $(function () {
+        $('#topTable').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+       
+    });
+</script>
+
+
+<script>
+    $(function () {
+        function initializeTableDeals(orderingEnabled) {
+            $("#tableDeals").DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": orderingEnabled,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+                "pageLength": 20,
+                "buttons": ["copy", "csv", "excel", "pdf"],
+            }).buttons().container().appendTo('#tableDeals_wrapper .col-md-6:eq(0)');
+        }
+
+        // Инициализация таблицы при загрузке страницы с сортировкой отключенной
+        initializeTableDeals(false);
+
+        // Обработчик изменения состояния чекбокса
+        $("#toggleOrdering").change(function () {
+            // Пересоздать таблицу с новой конфигурацией
+            $("#tableDeals").DataTable().destroy();
+            initializeTableDeals($(this).is(":checked"));
+        });
+    });
+</script>
+
+
+@* ОБЩЕЕ продажи-продления количество *@
+<script>
+    $(function () {
+        var donutChartCanvas = $('#dealsSells').get(0).getContext('2d')
+        var donutData = {
+            labels: ['Продажи', 'Продления'],
+            datasets: [
+                {
+                    data: [@Html.Raw(cliCalc.salesCount), @Html.Raw(cliCalc.renewsCount)],
+                    backgroundColor: ['#87CEEB', '#FFA07A'],
+                }
+            ]
+        }
+
+
+        var donutOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: '#ffffff' // Цвет текста легенды
+                }
+            }
+        }
+        new Chart(donutChartCanvas, {
+            type: 'doughnut',
+            data: donutData,
+            options: donutOptions
+        })
+    })
+</script>
+
+@* ОБЩЕЕ продажи-продления выручка *@
+<script>
+    $(function () {
+        var donutChartCanvas = $('#dealsProfit').get(0).getContext('2d')
+        var donutData = {
+            labels: ['Продажи', 'Продления'],
+            datasets: [
+                {
+                    data: [@Html.Raw(cliCalc.salesRevenue), @Html.Raw(cliCalc.renewsRevenue)],
+                    backgroundColor: ['#87CEEB', '#FFA07A'],
+                }
+            ]
+        }
+        var donutOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: '#ffffff' // Цвет текста легенды
+                }
+            }
+        }
+        new Chart(donutChartCanvas, {
+            type: 'doughnut',
+            data: donutData,
+            options: donutOptions
+        })
+    })
+</script>
+
+@* ПРОДАЖИ количества продаж конфигураций *@
+<script>
+    $(function () {
+        var donutChartCanvas = $('#confSellsCount').get(0).getContext('2d')
+        var donutData = {
+            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(confSellsCount.Select(x => x.Name).ToList())),
+            datasets: [
+                {
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(confSellsCount.Select(x => x.Sales).ToList())),
+                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(confSellsCount.Select(x => x.RGBColor).ToList())),
+                }
+            ]
+        }
+
+
+        var donutOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: '#ffffff' // Цвет текста легенды
+                }
+            }
+        }
+
+        new Chart(donutChartCanvas, {
+            type: 'doughnut',
+            data: donutData,
+            options: donutOptions
+        })
+    })
+</script>
+
+@* ПРОДАЖИ выручки с продаж конфигураций *@
+<script>
+    $(function () {
+        var donutChartCanvas = $('#confSellsRev').get(0).getContext('2d')
+        var donutData = {
+            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(confSellsRev.Select(x => x.Name).ToList())),
+            datasets: [
+                {
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(confSellsRev.Select(x => x.Revenue).ToList())),
+                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(confSellsRev.Select(x => x.RGBColor).ToList())),
+                }
+            ]
+        }
+        var donutOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: '#ffffff' // Цвет текста легенды
+                }
+            }
+        }
+        new Chart(donutChartCanvas, {
+            type: 'doughnut',
+            data: donutData,
+            options: donutOptions
+        })
+    })
+</script>
+
+@* ПРОДАЖИ количества продаж модулей *@
+<script>
+    $(function () {
+        var donutChartCanvas = $('#modSellsCount').get(0).getContext('2d')
+        var donutData = {
+            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(modSellsCount.Select(x => x.Name).ToList())),
+            datasets: [
+                {
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(modSellsCount.Select(x => x.Sales).ToList())),
+                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(modSellsCount.Select(x => x.RGBColor).ToList())),
+                }
+            ]
+        }
+
+        var donutOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: '#ffffff' // Цвет текста легенды
+                }
+            }
+        }
+        new Chart(donutChartCanvas, {
+            type: 'doughnut',
+            data: donutData,
+            options: donutOptions
+        })
+    })
+</script>
+
+@* ПРОДАЖИ выручки c продаж модулей *@
+<script>
+    $(function () {
+        var donutChartCanvas = $('#modSellsRev').get(0).getContext('2d')
+        var donutData = {
+            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(modSellsRev.Select(x => x.Name).ToList())),
+            datasets: [
+                {
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(modSellsRev.Select(x => x.Revenue).ToList())),
+                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(modSellsRev.Select(x => x.RGBColor).ToList())),
+                }
+            ]
+        }
+
+
+        var donutOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: '#ffffff' // Цвет текста легенды
+                }
+            }
+        }
+        //Create pie or douhnut chart
+        // You can switch between pie and douhnut using the method below.
+        new Chart(donutChartCanvas, {
+            type: 'doughnut',
+            data: donutData,
+            options: donutOptions
+        })
+    })
+</script>
+
+@* ПРОДЛЕНИЯ количества продлений *@
+<script>
+    $(function () {
+        var donutChartCanvas = $('#allRenewCount').get(0).getContext('2d')
+        var donutData = {
+            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(allRenewCount.Select(x => x.Name).ToList())),
+            datasets: [
+                {
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(allRenewCount.Select(x => x.Sales).ToList())),
+                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(allRenewCount.Select(x => x.RGBColor).ToList())),
+                }
+            ]
+        }
+
+        var donutOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: '#ffffff' // Цвет текста легенды
+                }
+            }
+        }
+        new Chart(donutChartCanvas, {
+            type: 'doughnut',
+            data: donutData,
+            options: donutOptions
+        })
+    })
+</script>
+
+@* ПРОДЛЕНИЯ выручки c продлений *@
+<script>
+    $(function () {
+        var donutChartCanvas = $('#allRenewRev').get(0).getContext('2d')
+        var donutData = {
+            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(allRenewRev.Select(x => x.Name).ToList())),
+            datasets: [
+                {
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(allRenewRev.Select(x => x.Revenue).ToList())),
+                    backgroundColor: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(allRenewRev.Select(x => x.RGBColor).ToList())),
+                }
+            ]
+        }
+
+
+        var donutOptions = {
+            maintainAspectRatio: false,
+            responsive: true,
+            legend: {
+                labels: {
+                    fontColor: '#ffffff' // Цвет текста легенды
+                }
+            }
+        }
+        //Create pie or douhnut chart
+        // You can switch between pie and douhnut using the method below.
+        new Chart(donutChartCanvas, {
+            type: 'doughnut',
+            data: donutData,
+            options: donutOptions
+        })
+    })
+</script>

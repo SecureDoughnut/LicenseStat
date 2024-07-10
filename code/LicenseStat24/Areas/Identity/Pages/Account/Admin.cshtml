@@ -1,0 +1,64 @@
+﻿@page
+@model AdminModel
+@{
+    ViewData["Title"] = "Admin Page";
+    var usermg = Model._userManager;
+    var users = Model._userManager.Users.ToList();
+}
+
+<style>
+    .action-buttons a,
+    .action-buttons button {
+        margin-right: 5px;
+    }
+</style>
+
+<div class="content-wrapper">
+    <section class="content">
+        <div class="container-fluid">
+            <br>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-users"></i>
+                                Таблица пользователей
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table id="usersTable" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Роль</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var usr in users)
+                                    {
+                                        <tr>
+                                            <td>@Html.Raw(usr.Email)</td>
+                                            <td>@Html.Raw(usermg.GetRolesAsync(usr).Result.First())</td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <a href="/Identity/Account/Edit?id=@usr.Id" class="btn btn-info btn-sm">Изменить</a>
+
+                                                    <form asp-page-handler="DeleteUser" method="post" class="d-inline">
+                                                        <input type="hidden" name="userId" value="@usr.Id" />
+                                                        <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

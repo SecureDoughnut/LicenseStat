@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <style>
+        @media print {
+            .page-break {
+                page-break-before: always;
+            }
+
+            .no-page-break {
+                page-break-inside: avoid;
+            }
+            .no-print {
+                display: none;
+            }
+            @page {
+                margin: 10mm;
+            }
+        }
+    </style>
+</head>
+<body class="hold-transition">
+    <div class="wrapper">
+        <script src="https://adminlte.io/themes/v3/plugins/jquery/jquery.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/dist/js/adminlte.js"></script>
+
+        <script src="https://adminlte.io/themes/v3/plugins/jquery-mousewheel/jquery.mousewheel.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/raphael/raphael.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/jquery-mapael/jquery.mapael.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/jquery-mapael/maps/usa_states.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/chart.js/Chart.min.js"></script>
+
+
+        <script src="https://adminlte.io/themes/v3/plugins/datatables/jquery.dataTables.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/jszip/jszip.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/pdfmake/pdfmake.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/pdfmake/vfs_fonts.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+        <script src="https://adminlte.io/themes/v3/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+
+
+        <div class="container-fluid">
+            <br>
+            <h2>Данные за 1/1/2021 - 12/31/2023</h2>
+            <br>
+            <section class="content">
+                <div class="row">
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>50</h3>
+                                <p>Новые клиенты</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-person-add"></i>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>97</h3>
+                                <p>Новые внедрения</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-cube"></i>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>12,402,000 руб</></h3>
+                                <p>Выручка</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-stats-bars"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Информация по интервалам</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3 class="card-title">Новые внедрения</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="commonDeployChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="card-header">
+                            <h3 class="card-title">Новые клиенты</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="commonClientsChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card-header">
+                            <h3 class="card-title">Выручка с продаж и продлений</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="commonRevChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <br>
+                <h3>Кратко по сделкам</h3>
+                <br>
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-handshake"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Выручка с продаж</span>
+                                <span class="info-box-number">6,148,500 руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-receipt"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Выручка с продлений</span>
+                                <span class="info-box-number">6,253,500 руб</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Общая выручка</span>
+                                <span class="info-box-number">12,402,000 руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Непродлений</span>
+                                <span class="info-box-number">92</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="col-lg-12">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">Топ продуктов по выручке</h3>
+                        </div>
+                        <div class="card-body">
+                            <table id="topTable" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Имя</th>
+                                        <th>Количество, шт</th>
+                                        <th>Выручка, руб</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+<td>[RENEW] Кабинет врача</td>
+<td>535</td>
+<td>1872500</td>
+</tr>
+<tr>
+<td>[RENEW] Регистратура</td>
+<td>425</td>
+<td>1487500</td>
+</tr>
+<tr>
+<td>[CONF] Регистратура</td>
+<td>161</td>
+<td>966000</td>
+</tr>
+<tr>
+<td>[CONF] Кабинет врача</td>
+<td>265</td>
+<td>927500</td>
+</tr>
+<tr>
+<td>[RENEW] Регистратура Плюс</td>
+<td>129</td>
+<td>451500</td>
+</tr>
+<tr>
+<td>[RENEW] Управление клиникой</td>
+<td>123</td>
+<td>430500</td>
+</tr>
+<tr>
+<td>[RENEW] Управление профосмотрами</td>
+<td>114</td>
+<td>399000</td>
+</tr>
+<tr>
+<td>[MOD] Онлайн касса</td>
+<td>95</td>
+<td>380000</td>
+</tr>
+<tr>
+<td>[RENEW] Профосмотры</td>
+<td>87</td>
+<td>304500</td>
+</tr>
+<tr>
+<td>[CONF] Управление профосмотрами</td>
+<td>32</td>
+<td>304000</td>
+</tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-lg-6 no-print">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Соотношение выручки</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart">
+                                    <canvas id="dealsRevDiag" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 no-print">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Соотношение количества лицензий</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart">
+                                    <canvas id="dealsSalesDiag" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <h3>Продажи</h3>
+                <br>
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-desktop"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Выручка с конфигураций</span>
+                                <span class="info-box-number">4,185,500 руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-desktop"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Выручка с модулей</span>
+                                <span class="info-box-number">1,963,000 руб</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Общая выручка c продаж</span>
+                                <span class="info-box-number">6,148,500 руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-handshake"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Количество продаж</span>
+                                <span class="info-box-number">708</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <br>
+                <h3>Продления</h3>
+                <br>
+                <div class="row">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-ruble-sign"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Общая выручка c продлений</span>
+                                <span class="info-box-number">6,253,500 руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-receipt"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Количество продлений</span>
+                                <span class="info-box-number">1,627</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-break"></div>
+                <br>
+                <h3>Лицензии за весь интервал</h3>
+                <br>
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-clock"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Было активно</span>
+                                <span class="info-box-number">3041 лицензий</span>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-6">
+
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Топ продуктов</h3>
+                            </div>
+                            <div class="card-body">
+                                <table id="positionsTable" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Количество</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+<td>Кабинет врача</td>
+<td>961</td>
+</tr>
+<tr>
+<td>Регистратура</td>
+<td>777</td>
+</tr>
+<tr>
+<td>Регистратура Плюс</td>
+<td>252</td>
+</tr>
+<tr>
+<td>Управление клиникой</td>
+<td>214</td>
+</tr>
+<tr>
+<td>Other</td>
+<td>213</td>
+</tr>
+<tr>
+<td>Управление профосмотрами</td>
+<td>211</td>
+</tr>
+<tr>
+<td>Профосмотры</td>
+<td>176</td>
+</tr>
+<tr>
+<td>Колл-центр</td>
+<td>74</td>
+</tr>
+<tr>
+<td>[СЕРВИС] Интернет-запись</td>
+<td>66</td>
+</tr>
+<tr>
+<td>Процедурный кабинет</td>
+<td>57</td>
+</tr>
+<tr>
+<td>ЭЦП медицинских документов</td>
+<td>40</td>
+</tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">На диаграмме</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="activeLicenses" style="min-height: 250px; height: 250px; max-height: 250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="page-break"></div>
+                <h3>Лицензии по интервалам</h3>
+                <row>
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Количество активных лицензий суммарное</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="activeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <row>
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Активные приобретенные лицензии за время </h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="buyChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <row>
+                    <div class="col-lg-12 ">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Активные замененные лицензии за время </h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="changeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <row>
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Активные лицензии-расширения за время</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="extChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <div class="page-break"></div>
+                <row>
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Активные продленные лицензии за время </h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="renChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </row>
+                <h4>Клиенты</h4>
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-user-plus"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Активные</span>
+                                <span class="info-box-number">111</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-user-minus"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Ушедшие</span>
+                                <span class="info-box-number">12</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-handshake"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Ср. выручка продаж</span>
+                                <span class="info-box-number">60,279 руб</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="info-box mb-3">
+                            <span class="info-box-icon bg-success elevation-1"><i class="fas fa-handshake"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Ср. выручка продлений</span>
+                                <span class="info-box-number">65,140 руб</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Топ активных по выручке</h3>
+                            </div>
+                            <div class="card-body">
+                                <table id="positionsTable" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Почта</th>
+                                            <th>Телефон</th>
+                                            <th>ФИО</th>
+                                            <th>Выручка с продаж</th>
+                                            <th>Выручка с продлений</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+<td>Клиент 1088939731</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>427000</td>
+<td>165000</td>
+</tr>
+<tr>
+<td>Клиент 1698109866</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>371500</td>
+<td>270000</td>
+</tr>
+<tr>
+<td>Клиент 1374806665</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>319000</td>
+<td>203500</td>
+</tr>
+<tr>
+<td>Клиент 867181864</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>291500</td>
+<td>105500</td>
+</tr>
+<tr>
+<td>Клиент 1978150191</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>225000</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Клиент 756537547</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>203000</td>
+<td>73000</td>
+</tr>
+<tr>
+<td>Клиент 1383540456</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>193000</td>
+<td>127000</td>
+</tr>
+<tr>
+<td>Клиент 17923156</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>145000</td>
+<td>236000</td>
+</tr>
+<tr>
+<td>Клиент 1582270938</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>131500</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Клиент 1778892129</td>
+<td>test@mail.ru</td>
+<td>89802520000         </td>
+<td>Иванов Иван Иванович</td>
+<td>129500</td>
+<td>34000</td>
+</tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </div>
+
+   
+    <script>
+        $(function () {
+            var multDates = ["1/1/2021","2/1/2021","3/1/2021","4/1/2021","5/1/2021","6/1/2021","7/1/2021","8/1/2021","9/1/2021","10/1/2021","11/1/2021","12/1/2021","1/1/2022","2/1/2022","3/1/2022","4/1/2022","5/1/2022","6/1/2022","7/1/2022","8/1/2022","9/1/2022","10/1/2022","11/1/2022","12/1/2022","1/1/2023","2/1/2023","3/1/2023","4/1/2023","5/1/2023","6/1/2023","7/1/2023","8/1/2023","9/1/2023","10/1/2023","11/1/2023","12/1/2023"];
+            var activeLicCount = [474,494,522,534,527,552,541,568,589,600,627,636,655,688,721,710,712,742,771,839,861,872,853,860,918,925,1044,995,1005,1039,1045,1030,1038,1107,1130,1181];
+            var notActiveLicCount = [107,107,112,113,113,113,115,115,116,116,119,129,129,138,143,145,145,146,147,149,151,154,164,166,167,173,174,179,188,193,194,201,202,204,214,218];
+            var actLicBuy = [122,127,138,138,141,144,140,160,167,174,175,175,192,189,170,176,181,194,212,232,225,227,213,213,211,206,231,262,259,238,227,205,217,255,273,295]; // приобретения за инетервал
+            var changeChart = [81,86,89,97,97,96,94,96,89,89,91,89,94,85,86,81,79,83,81,92,100,99,97,97,99,111,123,118,117,125,118,110,105,103,105,100]; // замены за инетервал
+            var extChart = [62,61,61,57,56,54,51,53,51,51,58,62,65,68,76,84,84,91,102,112,113,115,107,104,107,106,107,99,102,96,91,79,82,99,97,112]; // расширения за инетервал
+            var renChart = [209,220,234,242,233,258,256,259,282,286,303,310,304,346,389,369,368,374,376,403,423,431,436,446,501,502,583,516,527,580,609,636,634,650,655,674]; // продления за инетервал
+
+            var barChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0
+                        }
+                    }]
+                }
+            }
+
+            // Функция для создания графика
+            function createBarChart(labels, data, chartTitle, chartId, color) {
+                var ctx = document.getElementById(chartId).getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: chartTitle,
+                            data: data,
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: barChartOptions
+                });
+            }
+
+            // Создание графика для активных лицензий
+            createBarChart(multDates, activeLicCount, 'Активные', 'activeChart', 'rgba(75, 192, 192, 0.5)');
+
+
+            // Создание графика для лицензий типа покупок
+            createBarChart(multDates, actLicBuy, 'Приобретения', 'buyChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа замен
+            createBarChart(multDates, changeChart, 'Замены', 'changeChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа расширений
+            createBarChart(multDates, extChart, 'Расширения', 'extChart', 'rgba(75, 192, 192, 0.5)');
+
+            // Создание графика для лицензий типа продлений
+            createBarChart(multDates, renChart, 'Продления', 'renChart', 'rgba(75, 192, 192, 0.5)');
+        });
+    </script>
+
+    <script>
+        $(function () {
+            var donutChartCanvas = $('#activeLicenses').get(0).getContext('2d')
+            var donutData = {
+                labels: ["Кабинет врача","Регистратура","Регистратура Плюс","Управление клиникой","Управление профосмотрами","Профосмотры","Колл-центр","[СЕРВИС] Интернет-запись","Процедурный кабинет","ЭЦП медицинских документов","Other"],
+                datasets: [
+                    {
+                        data: [961,777,252,214,211,176,74,66,57,40,213],
+                        backgroundColor: ["#20B2AA","#FFD700","#87CEFA","#FFA07A","#CD5C5C","#90EE90","#87CEEB","#FFA500","#87CEEB","#87CEFA","#808080"],
+                    }
+                ]
+            }
+
+
+            var donutOptions = {
+                maintainAspectRatio: false,
+                responsive: true
+            }
+            //Create pie or douhnut chart
+            new Chart(donutChartCanvas, {
+                type: 'doughnut',
+                data: donutData,
+                options: donutOptions
+            })
+        })
+    </script>
+
+
+    <script type="text/javascript">
+        $(function () {
+            // Функция для создания графика
+            function createChart(ctx, data, options, type) {
+                new Chart(ctx, {
+                    type: type,
+                    data: data,
+                    options: options
+                });
+            }
+
+            // Функция для вычисления процентного изменения
+            function calculatePercentageChange(initial, final) {
+                return ((final - initial) / initial) * 100;
+            }
+
+            // Функция для вычисления среднего значения
+            function calculateAverageValue(dataset) {
+                var sum = dataset.reduce(function (a, b) { return a + b; }, 0);
+                return sum / dataset.length;
+            }
+
+            // Функция для форматирования даты
+            function formatDate(dateString) {
+                var date = new Date(dateString);
+                return date.toLocaleDateString();
+            }
+
+            // Функция для вывода статистики
+            function displayStatistics(labels, dataset, title, containerId) {
+                var max = Math.max(...dataset);
+                var min = Math.min(...dataset);
+                var average = calculateAverageValue(dataset);
+                var growthPercentage = calculatePercentageChange(dataset[0], dataset[dataset.length - 1]);
+                var prevIntervalChange = calculatePercentageChange(dataset[dataset.length - 2], dataset[dataset.length - 1]);
+
+                var statisticsContent = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">${title}</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-6">Макс. значение:</dt>
+                            <dd class="col-sm-6">${max} (${formatDate(labels[dataset.indexOf(max)])})</dd>
+                            <dt class="col-sm-6">Мин. значение:</dt>
+                            <dd class="col-sm-6">${min} (${formatDate(labels[dataset.indexOf(min)])})</dd>
+                            <dt class="col-sm-6">Сред. значение:</dt>
+                            <dd class="col-sm-6">${average.toFixed(2)}</dd>
+                            <dt class="col-sm-6">Рост с начала отсчета:</dt>
+                            <dd class="col-sm-6">${growthPercentage.toFixed(2)}%</dd>
+                            <dt class="col-sm-6">Рост с предыдущего интервала:</dt>
+                            <dd class="col-sm-6">${prevIntervalChange.toFixed(2)}%</dd>
+                        </dl>
+                    </div>
+                </div>
+            `;
+
+                $('#' + containerId).append(statisticsContent);
+            }
+
+
+            // График "Внедрения"
+            var chartDeployData = {
+                labels: ["1/1/2021","2/1/2021","3/1/2021","4/1/2021","5/1/2021","6/1/2021","7/1/2021","8/1/2021","9/1/2021","10/1/2021","11/1/2021","12/1/2021","1/1/2022","2/1/2022","3/1/2022","4/1/2022","5/1/2022","6/1/2022","7/1/2022","8/1/2022","9/1/2022","10/1/2022","11/1/2022","12/1/2022","1/1/2023","2/1/2023","3/1/2023","4/1/2023","5/1/2023","6/1/2023","7/1/2023","8/1/2023","9/1/2023","10/1/2023","11/1/2023","12/1/2023"],
+                datasets: [{
+                    label: "Внедрения",
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: [2,4,0,2,3,1,3,5,3,5,2,0,5,3,2,3,2,4,6,3,4,0,3,2,1,2,5,5,1,0,0,3,6,3,3,1]
+                }]
+            };
+
+            var chartClientData = {
+                labels: ["1/1/2021","2/1/2021","3/1/2021","4/1/2021","5/1/2021","6/1/2021","7/1/2021","8/1/2021","9/1/2021","10/1/2021","11/1/2021","12/1/2021","1/1/2022","2/1/2022","3/1/2022","4/1/2022","5/1/2022","6/1/2022","7/1/2022","8/1/2022","9/1/2022","10/1/2022","11/1/2022","12/1/2022","1/1/2023","2/1/2023","3/1/2023","4/1/2023","5/1/2023","6/1/2023","7/1/2023","8/1/2023","9/1/2023","10/1/2023","11/1/2023","12/1/2023"],
+                datasets: [{
+                    label: "Клиенты",
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: [1,4,0,1,0,0,2,0,0,4,2,0,2,0,2,1,2,4,1,1,1,0,3,1,0,2,4,3,1,0,0,2,3,1,1,1]
+                }]
+            };
+
+            var chartClientCtx = document.getElementById("commonClientsChart").getContext('2d');
+            var chartDeployCtx = document.getElementById("commonDeployChart").getContext('2d');
+
+            var chartDeployOptions = {
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true,
+                            color: "rgba(255,99,164,0.2)"
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true
+                        }
+                    }]
+                }
+            };
+            createChart(chartDeployCtx, chartDeployData, chartDeployOptions, 'bar');
+            createChart(chartClientCtx, chartClientData, chartDeployOptions, 'bar');
+
+            // Вызываем функцию для анализа и вывода статистических данных для графика "Внедрения"
+            displayStatistics(["1/1/2021","2/1/2021","3/1/2021","4/1/2021","5/1/2021","6/1/2021","7/1/2021","8/1/2021","9/1/2021","10/1/2021","11/1/2021","12/1/2021","1/1/2022","2/1/2022","3/1/2022","4/1/2022","5/1/2022","6/1/2022","7/1/2022","8/1/2022","9/1/2022","10/1/2022","11/1/2022","12/1/2022","1/1/2023","2/1/2023","3/1/2023","4/1/2023","5/1/2023","6/1/2023","7/1/2023","8/1/2023","9/1/2023","10/1/2023","11/1/2023","12/1/2023"], [2,4,0,2,3,1,3,5,3,5,2,0,5,3,2,3,2,4,6,3,4,0,3,2,1,2,5,5,1,0,0,3,6,3,3,1], 'Аналитика "Внедрения"', 'statisticsDeploy');
+
+            // График "Выручка"
+            var stackedBarChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true
+                    }]
+                }
+            };
+
+            createStackedBarChart(["1/1/2021","2/1/2021","3/1/2021","4/1/2021","5/1/2021","6/1/2021","7/1/2021","8/1/2021","9/1/2021","10/1/2021","11/1/2021","12/1/2021","1/1/2022","2/1/2022","3/1/2022","4/1/2022","5/1/2022","6/1/2022","7/1/2022","8/1/2022","9/1/2022","10/1/2022","11/1/2022","12/1/2022","1/1/2023","2/1/2023","3/1/2023","4/1/2023","5/1/2023","6/1/2023","7/1/2023","8/1/2023","9/1/2023","10/1/2023","11/1/2023","12/1/2023"], [52500,67000,377000,60000,70000,129500,20000,120500,66500,63000,155000,147000,130500,217000,352500,105500,87500,160500,126500,235500,129500,162500,179000,199500,278500,177000,384000,102000,185000,251000,339500,252500,188000,176000,203000,303000], [142000,141500,89500,31500,133500,153000,246500,212500,136000,160000,86000,120000,201000,36500,123500,39000,178500,216500,486000,152500,141000,60500,108000,97000,175000,229000,321000,116500,65500,78500,174500,301000,498000,251500,346500,99500], 'Выручка', 'commonRevChart');
+
+            displayStatistics(["1/1/2021","2/1/2021","3/1/2021","4/1/2021","5/1/2021","6/1/2021","7/1/2021","8/1/2021","9/1/2021","10/1/2021","11/1/2021","12/1/2021","1/1/2022","2/1/2022","3/1/2022","4/1/2022","5/1/2022","6/1/2022","7/1/2022","8/1/2022","9/1/2022","10/1/2022","11/1/2022","12/1/2022","1/1/2023","2/1/2023","3/1/2023","4/1/2023","5/1/2023","6/1/2023","7/1/2023","8/1/2023","9/1/2023","10/1/2023","11/1/2023","12/1/2023"], [142000,141500,89500,31500,133500,153000,246500,212500,136000,160000,86000,120000,201000,36500,123500,39000,178500,216500,486000,152500,141000,60500,108000,97000,175000,229000,321000,116500,65500,78500,174500,301000,498000,251500,346500,99500], 'Аналитика "Продажи"', 'statisticsRev');
+            displayStatistics(["1/1/2021","2/1/2021","3/1/2021","4/1/2021","5/1/2021","6/1/2021","7/1/2021","8/1/2021","9/1/2021","10/1/2021","11/1/2021","12/1/2021","1/1/2022","2/1/2022","3/1/2022","4/1/2022","5/1/2022","6/1/2022","7/1/2022","8/1/2022","9/1/2022","10/1/2022","11/1/2022","12/1/2022","1/1/2023","2/1/2023","3/1/2023","4/1/2023","5/1/2023","6/1/2023","7/1/2023","8/1/2023","9/1/2023","10/1/2023","11/1/2023","12/1/2023"], [52500,67000,377000,60000,70000,129500,20000,120500,66500,63000,155000,147000,130500,217000,352500,105500,87500,160500,126500,235500,129500,162500,179000,199500,278500,177000,384000,102000,185000,251000,339500,252500,188000,176000,203000,303000], 'Аналитика "Продления"', 'statisticsRev');
+
+            function createStackedBarChart(labels, dataset1, dataset2, chartTitle, chartId) {
+                var ctx = document.getElementById(chartId).getContext('2d');
+                var chartData = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Продления',
+                        data: dataset1,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Продажи',
+                        data: dataset2,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                    ]
+                };
+                createChart(ctx, chartData, stackedBarChartOptions, 'bar');
+            }
+        });
+    </script>
+
+
+
+    <script>
+        $(function () {
+            var donutChartCanvas = $('#dealsSalesDiag').get(0).getContext('2d')
+            var donutData = {
+                labels: ['Продажи', 'Продления'],
+                datasets: [
+                    {
+                        data: [708, 1627],
+                        backgroundColor: ['#87CEEB', '#FFA07A'],
+                    }
+                ]
+            }
+
+
+            var donutOptions = {
+                maintainAspectRatio: false,
+                responsive: true
+            }
+            new Chart(donutChartCanvas, {
+                type: 'doughnut',
+                data: donutData,
+                options: donutOptions
+            })
+        })
+    </script>
+
+    <script>
+        $(function () {
+            var donutChartCanvas = $('#dealsRevDiag').get(0).getContext('2d')
+            var donutData = {
+                labels: ['Продажи', 'Продления'],
+                datasets: [
+                    {
+                        data: [6148500, 6253500],
+                        backgroundColor: ['#87CEEB', '#FFA07A'],
+                    }
+                ]
+            }
+            var donutOptions = {
+                maintainAspectRatio: false,
+                responsive: true
+            }
+            new Chart(donutChartCanvas, {
+                type: 'doughnut',
+                data: donutData,
+                options: donutOptions
+            })
+        })
+    </script>
+
+
+<!-- Visual Studio Browser Link -->
+<script type="text/javascript" src="/_vs/browserLink" async="async" id="__browserLink_initializationData" data-requestId="6948d978ac5d4a1eb30fcbf7c66d46a1" data-requestMappingFromServer="false" data-connectUrl="http://localhost:62885/977a9d04084044ab826afee29a1f248d/browserLink"></script>
+<!-- End Browser Link -->
+<script src="/_framework/aspnetcore-browser-refresh.js"></script></body>
+</html>
