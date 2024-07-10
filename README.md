@@ -47,7 +47,7 @@ LicenseStat - веб-приложение, созданное для просм�
 </details>
 <details>
   <summary>Отчет</summary>
-  [Пример отчета](https://github.com/ggPonchik/LicenseStat/blob/main/screenshot/REPORT-1_1_2021-12_31_2023.html)
+  https://github.com/ggPonchik/LicenseStat/blob/main/screenshot/REPORT-1_1_2021-12_31_2023.html
 </details>
 
 
