@@ -6,3 +6,26 @@ LicenseStat - веб-приложение, созданное для просм�
 - Microsoft SQL Server
 - AdminLTE + HTML\CSS\JS
 
+Скриншоты:
+<details>
+  <summary>Общая информация</summary>
+  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_1.png)
+</details>
+<details>
+  <summary>Сделки</summary>
+  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_2.png)
+</details>
+<details>
+  <summary>Лицензии</summary>
+  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_6.png)
+</details>
+<details>
+  <summary>Клиенты</summary>
+  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_7.png)
+</details>
+<details>
+  <summary>Карта</summary>
+  ![alt text](https://raw.githubusercontent.com/ggPonchik/LicenseStat/main/screenshot/Screenshot_8.png)
+</details>
+
+
